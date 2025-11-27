@@ -54,6 +54,12 @@ app.get("/subs", (req, res) => {
     res.json(subscriptions)
 })
 
+app.get("/", (req, res) => {
+    res.status(201).json({
+        message: "Done"
+    })
+})
+
 // --- MQTT Client ---
 const mqttClient = mqtt.connect(connectUrl, {
     clientId,
