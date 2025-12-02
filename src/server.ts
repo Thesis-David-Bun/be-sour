@@ -54,6 +54,12 @@ app.get("/subs", (req, res) => {
     res.json(subscriptions)
 })
 
+app.get("/status", (req, res) => {
+    res.status(201).json({
+        count: count
+    })
+})
+
 app.get("/", (req, res) => {
     res.status(201).json({
         message: "Done"
@@ -113,7 +119,7 @@ mqttClient.on("connect", () => {
 })
 
 let payloads: any = []
-// let count: number = 
+let count: number = 0
 
 mqttClient.on("message", (topic, message) => {
     if (topic === "/test") {
@@ -169,18 +175,20 @@ mqttClient.on("message", (topic, message) => {
                 JSON.stringify({
                     title: JSON.parse(payload).status,
                     body: payload,
-                    data: { timestamp: Date.now() }
+                    data: { timestamp: Date.now(), is_reset_num: count }
                 })
             ).catch(err => console.error("Push error:", err))
         })
-    } else if (topic === "/is_reset" && is_reset === "1") {
-        mqttClient.publish("/reset", "p", { qos: 0 }, (err) => {
+    } else if (topic === "/is_reset") {
+        mqttClient.publish("/is_reset", is_reset, { qos: 0 }, (err) => {
             if (err) {
                 console.error("Publish error:", err);
             }
         });
         is_reset = "0"
         console.log("Reset");
+    } else if (topic === "/success") {
+        count++;
     }
 })
 
