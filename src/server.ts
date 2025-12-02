@@ -140,9 +140,10 @@ mqttClient.on("message", (topic, msg) => {
     if (topic === TOPIC_RESET) {
         if (resetFlag === "1") {
             mqttClient.publish(TOPIC_RESET, "1", { qos: 0 });
+            resetFlag = "0";
+            console.log("Reset command sent!");
         }
-        resetFlag = "0";
-        console.log("Reset command sent!");
+        console.log("No reset!");
     }
 });
 
