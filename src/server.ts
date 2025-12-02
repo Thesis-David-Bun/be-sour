@@ -60,6 +60,27 @@ app.get("/", (req, res) => {
     })
 })
 
+let is_reset = "0";
+
+app.post("/publish", (req, res) => {
+    // const { topic, message } = req.body;
+    is_reset = "1";
+
+    // if (!topic || !message) {
+    //     return res.status(400).json({ error: "Missing topic or message" });
+    // }
+
+    // mqttClient.publish(topic, message, { qos: 0 }, (err) => {
+    //     if (err) {
+    //         console.error("Publish error:", err);
+    //         return res.status(500).json({ error: "MQTT publish failed" });
+    //     }
+
+    //     res.json({ success: true });
+    // });
+});
+
+
 // --- MQTT Client ---
 const mqttClient = mqtt.connect(connectUrl, {
     clientId,
@@ -92,64 +113,75 @@ mqttClient.on("connect", () => {
 })
 
 let payloads: any = []
-// let count: number = 0
+// let count: number = 
 
 mqttClient.on("message", (topic, message) => {
-    const payload = message.toString()
-    console.log(`${topic}: ${payload}`)
-    payloads.push(JSON.parse(payload))
-    // count++
-    // if ((JSON.parse(payload).n === 11)) {
-    //     const filePath = 'log/output_' + new Intl.DateTimeFormat('id-ID', {
-    //         year: "numeric",
-    //         month: '2-digit',
-    //         day: '2-digit',
-    //     }).format(new Date()).replaceAll('/', '-') + '.json'
-    //     fs.readFile(filePath, (err, data: any) => {
-    //         let jsonData = JSON.parse(data)
+    if (topic === "/test") {
 
-    //         payloads.push({
-    //             'time': new Intl.DateTimeFormat('id-ID', {
-    //                 year: "numeric",
-    //                 month: '2-digit',
-    //                 day: '2-digit',
-    //                 hour: '2-digit',
-    //                 minute: '2-digit',
-    //                 second: '2-digit',
-    //             }).format(new Date())
-    //         })
-    //         jsonData.push(payloads)
-    //         fs.writeFile(filePath, JSON.stringify(jsonData), (err) => {
-    //             if (err) {
-    //                 console.error('Writing Error: ', err)
-    //             } else {
-    //                 console.log('Success writing output file ' + filePath)
-    //             }
-    //         })
-    //         if (err) {
-    //             console.error('Reading Error: ', err)
-    //         } else {
-    //             console.log('Success reading a file ' + filePath)
-    //         }
+        const payload = message.toString()
+        console.log(`${topic}: ${payload}`)
+        payloads.push(JSON.parse(payload))
+        // count++
+        // if ((JSON.parse(payload).n === 11)) {
+        //     const filePath = 'log/output_' + new Intl.DateTimeFormat('id-ID', {
+        //         year: "numeric",
+        //         month: '2-digit',
+        //         day: '2-digit',
+        //     }).format(new Date()).replaceAll('/', '-') + '.json'
+        //     fs.readFile(filePath, (err, data: any) => {
+        //         let jsonData = JSON.parse(data)
 
-    //         count = 0;
-    //         payloads = []
-    //     })
-    // } else {
-    //     count = 0;
-    //     payloads = []
-    // }
+        //         payloads.push({
+        //             'time': new Intl.DateTimeFormat('id-ID', {
+        //                 year: "numeric",
+        //                 month: '2-digit',
+        //                 day: '2-digit',
+        //                 hour: '2-digit',
+        //                 minute: '2-digit',
+        //                 second: '2-digit',
+        //             }).format(new Date())
+        //         })
+        //         jsonData.push(payloads)
+        //         fs.writeFile(filePath, JSON.stringify(jsonData), (err) => {
+        //             if (err) {
+        //                 console.error('Writing Error: ', err)
+        //             } else {
+        //                 console.log('Success writing output file ' + filePath)
+        //             }
+        //         })
+        //         if (err) {
+        //             console.error('Reading Error: ', err)
+        //         } else {
+        //             console.log('Success reading a file ' + filePath)
+        //         }
 
-    subscriptions.forEach(sub => {
-        webpush.sendNotification(
-            sub,
-            JSON.stringify({
-                title: JSON.parse(payload).status,
-                body: payload,
-                data: { timestamp: Date.now() }
-            })
-        ).catch(err => console.error("Push error:", err))
-    })
+        //         count = 0;
+        //         payloads = []
+        //     })
+        // } else {
+        //     count = 0;
+        //     payloads = []
+        // }
+
+        subscriptions.forEach(sub => {
+            webpush.sendNotification(
+                sub,
+                JSON.stringify({
+                    title: JSON.parse(payload).status,
+                    body: payload,
+                    data: { timestamp: Date.now() }
+                })
+            ).catch(err => console.error("Push error:", err))
+        })
+    } else if (topic === "/is_reset" && is_reset === "1") {
+        mqttClient.publish("/reset", "p", { qos: 0 }, (err) => {
+            if (err) {
+                console.error("Publish error:", err);
+            }
+        });
+        is_reset = "0"
+        console.log("Reset");
+    }
 })
 
 // --- Start Server ---
