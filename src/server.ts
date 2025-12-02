@@ -1,78 +1,97 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import express from "express"
-import bodyParser from "body-parser"
-import cors from "cors"
-import mqtt from "mqtt"
-import webpush from "web-push"
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import mqtt from "mqtt";
+import webpush from "web-push";
 
 // --- CONFIG ---
-const protocol = 'mqtts'
-const host = 'c8655e388ba0426a84f2197ce7a2e4ff.s1.eu.hivemq.cloud'
-const port = '8883'  // secure websocket port for HiveMQ Cloud
-const id_mqtt = 'Petal'
-const topic = '/test'
-const pass_mqtt = 'iwn8194;opqHhw'
+const protocol = "mqtts";
+const host = "c8655e388ba0426a84f2197ce7a2e4ff.s1.eu.hivemq.cloud";
+const port = "8883";
 
-const clientId = `${id_mqtt}-${Math.random().toString(16).substr(2, 8)}`
-const connectUrl = `${protocol}://${host}:${port}`
+const id_mqtt = "Petal";
+const pass_mqtt = "iwn8194;opqHhw";
 
+const TOPIC_SENSOR = "/test";
+const TOPIC_RESET = "/is_reset";
+const TOPIC_SUCCESS = "/success";
 
-// const VAPID_PUBLIC = "BEnud_hbQRz-B7xHypFu_TXswSWxA03Si_pml7hoJ_R6R6qfkQs4DlZshJQPPhNd6ScI8wnmtqDTpbKeOg3GQbU"
-// const VAPID_PRIVATE = "97uoLh9Z9fOcfqQkiakrZXJGbEQ0IlQVbQ561ZJuzeY"
-const VAPID_PUBLIC = process.env.PUBLIC_KEY
-const VAPID_PRIVATE = process.env.PRIVATE_KEY
+const clientId = `${id_mqtt}-${Math.random().toString(16).substr(2, 8)}`;
+const connectUrl = `${protocol}://${host}:${port}`;
+
+const VAPID_PUBLIC = process.env.PUBLIC_KEY;
+const VAPID_PRIVATE = process.env.PRIVATE_KEY;
+
+// Validate VAPID
+if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
+    console.warn("⚠ Missing VAPID keys. Push notifications may fail.");
+}
 
 // --- Web Push Setup ---
 webpush.setVapidDetails(
-    "mailto:david.bunyamin.99@gmail.com",  // <-- FIXED
-    VAPID_PUBLIC,
-    VAPID_PRIVATE
-)
+    "mailto:david.bunyamin.99@gmail.com",
+    VAPID_PUBLIC!,
+    VAPID_PRIVATE!
+);
 
-// In-memory storage for demo
-let subscriptions: any[] = []
+// -- Storage --
+let subscriptions: any[] = [];
+let lastPayload: any = null;
+let resetFlag = "0";
+let count = 0;
 
-// --- Express Setup ---
-const app = express()
-app.use(cors())
-app.use(bodyParser.json())
+// --- Express ---
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
+// Store subscription
 app.post("/subscribe", (req, res) => {
     const sub = req.body;
-
-    const exists = subscriptions.find(s => s.endpoint === sub.endpoint);
-    if (!exists) {
+    if (!subscriptions.find(s => s.endpoint === sub.endpoint)) {
         subscriptions.push(sub);
     }
-
     res.status(201).json({ message: "Subscription saved." });
 });
 
+// Show subs
 app.get("/subs", (req, res) => {
-    res.json(subscriptions)
-})
-
-app.get("/status", (req, res) => {
-    res.status(201).json({
-        count: count
-    })
-})
-
-app.get("/", (req, res) => {
-    res.status(201).json({
-        message: "Done"
-    })
-})
-
-let is_reset = "0";
-
-app.post("/publish", (req, res) => {
-    is_reset = "1";
-    res.json({ success: true });
+    res.json(subscriptions);
 });
 
+// Return device / backend status
+app.get("/status", (req, res) => {
+    res.json({
+        count
+    });
+});
+
+// Publish a message to MQTT
+app.post("/publish", (req, res) => {
+    resetFlag = "1";
+    res.json({ success: true });
+    // const { topic, message } = req.body;
+
+    // if (!topic || !message) {
+    //     return res.status(400).json({ error: "topic and message required" });
+    // }
+
+    // mqttClient.publish(topic, message, { qos: 0 }, (err) => {
+    //     if (err) {
+    //         console.error("MQTT publish error:", err);
+    //         return res.status(500).json({ error: "Publish failed" });
+    //     }
+    //     console.log(`Published → ${topic}: ${message}`);
+    //     res.json({ success: true });
+    // });
+});
+
+// Dedicated RESET endpoint
+// app.post("/reset", (req, res) => {
+// });
 
 // --- MQTT Client ---
 const mqttClient = mqtt.connect(connectUrl, {
@@ -80,108 +99,53 @@ const mqttClient = mqtt.connect(connectUrl, {
     clean: true,
     username: id_mqtt,
     password: pass_mqtt,
-})
+});
 
 mqttClient.on("connect", () => {
-    console.log("MQTT connected")
-    mqttClient.subscribe(topic)
-    // const data = []
-    // const jsonString = JSON.stringify(data, null, 4)
-    // const filePath = 'log/output_' + new Intl.DateTimeFormat('id-ID', {
-    //     year: "numeric",
-    //     month: '2-digit',
-    //     day: '2-digit',
-    // }).format(new Date()).replaceAll('/', '-') + '.json'
-    // if (fs.existsSync(filePath)) {
-    //     console.log('File exist ' + filePath)
-    // } else {
-    //     fs.writeFile(filePath, jsonString, (err) => {
-    //         if (err) {
-    //             console.error('Error: ', err)
-    //         } else {
-    //             console.log('Success creating file ' + filePath)
-    //         }
-    //     })
-    // }
-})
+    console.log("MQTT connected");
 
-let payloads: any = []
-let count: number = 0
+    mqttClient.subscribe([TOPIC_SENSOR, TOPIC_RESET, TOPIC_SUCCESS], (err) => {
+        if (err) {
+            console.error("Subscription error:", err);
+        } else {
+            console.log("Subscribed to all topics");
+        }
+    });
+});
 
-mqttClient.on("message", (topic, message) => {
-    const payload = message.toString()
-    console.log(`${topic}: ${payload}`)
-    if (topic === "/test") {
-        payloads.push(JSON.parse(payload))
-        // count++
-        // if ((JSON.parse(payload).n === 11)) {
-        //     const filePath = 'log/output_' + new Intl.DateTimeFormat('id-ID', {
-        //         year: "numeric",
-        //         month: '2-digit',
-        //         day: '2-digit',
-        //     }).format(new Date()).replaceAll('/', '-') + '.json'
-        //     fs.readFile(filePath, (err, data: any) => {
-        //         let jsonData = JSON.parse(data)
+// Handle MQTT messages
+mqttClient.on("message", (topic, msg) => {
+    const message = msg.toString();
+    console.log(`${topic}: ${message}`);
 
-        //         payloads.push({
-        //             'time': new Intl.DateTimeFormat('id-ID', {
-        //                 year: "numeric",
-        //                 month: '2-digit',
-        //                 day: '2-digit',
-        //                 hour: '2-digit',
-        //                 minute: '2-digit',
-        //                 second: '2-digit',
-        //             }).format(new Date())
-        //         })
-        //         jsonData.push(payloads)
-        //         fs.writeFile(filePath, JSON.stringify(jsonData), (err) => {
-        //             if (err) {
-        //                 console.error('Writing Error: ', err)
-        //             } else {
-        //                 console.log('Success writing output file ' + filePath)
-        //             }
-        //         })
-        //         if (err) {
-        //             console.error('Reading Error: ', err)
-        //         } else {
-        //             console.log('Success reading a file ' + filePath)
-        //         }
-
-        //         count = 0;
-        //         payloads = []
-        //     })
-        // } else {
-        //     count = 0;
-        //     payloads = []
-        // }
-
-        subscriptions.forEach(sub => {
-            webpush.sendNotification(
-                sub,
-                JSON.stringify({
-                    title: JSON.parse(payload).status,
-                    body: payload,
-                    data: { timestamp: Date.now(), is_reset_num: count }
-                })
-            ).catch(err => console.error("Push error:", err))
-        })
-    } else if (topic === "/is_reset") {
-        mqttClient.publish("/is_reset", is_reset, { qos: 0 }, (err) => {
-            if (err) {
-                console.error("Publish error:", err);
-            }
-        });
-        is_reset = "0"
-        console.log("Reset");
-    } else if (topic === "/success") {
+    if (topic === TOPIC_SENSOR) {
+        lastPayload = JSON.parse(message);
         count++;
-        console.log("success");
+
+        // notify clients
+        subscriptions.forEach(sub => {
+            webpush.sendNotification(sub, JSON.stringify({
+                title: lastPayload.status,
+                body: message,
+                data: { timestamp: Date.now() }
+            }))
+                .catch(err => console.error("Push error:", err));
+        });
     }
-})
+
+    if (topic === TOPIC_SUCCESS) {
+        count++;
+        console.log("Device acknowledged success");
+    }
+
+    if (topic === TOPIC_RESET) {
+        mqttClient.publish(TOPIC_RESET, resetFlag, { qos: 0 });
+        console.log("Reset command sent!");
+        resetFlag = "0";
+    }
+});
 
 // --- Start Server ---
 app.listen(3000, () => {
-    console.log("Backend running on http://localhost:3000")
-    // console.log(VAPID_PUBLIC)
-    // console.log(VAPID_PRIVATE)
-})
+    console.log("Backend running on http://localhost:3000");
+});
