@@ -69,21 +69,14 @@ app.get("/", (req, res) => {
 let is_reset = "0";
 
 app.post("/publish", (req, res) => {
-    // const { topic, message } = req.body;
+    const { topic, message } = req.body;
     is_reset = "1";
 
-    // if (!topic || !message) {
-    //     return res.status(400).json({ error: "Missing topic or message" });
-    // }
+    if (!topic || !message) {
+        return res.status(400).json({ error: "Missing topic or message" });
+    }
 
-    // mqttClient.publish(topic, message, { qos: 0 }, (err) => {
-    //     if (err) {
-    //         console.error("Publish error:", err);
-    //         return res.status(500).json({ error: "MQTT publish failed" });
-    //     }
-
-    //     res.json({ success: true });
-    // });
+    res.json({ success: true });
 });
 
 
