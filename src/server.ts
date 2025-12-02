@@ -109,10 +109,9 @@ let payloads: any = []
 let count: number = 0
 
 mqttClient.on("message", (topic, message) => {
+    const payload = message.toString()
+    console.log(`${topic}: ${payload}`)
     if (topic === "/test") {
-
-        const payload = message.toString()
-        // console.log(`${topic}: ${payload}`)
         payloads.push(JSON.parse(payload))
         // count++
         // if ((JSON.parse(payload).n === 11)) {
@@ -176,6 +175,7 @@ mqttClient.on("message", (topic, message) => {
         console.log("Reset");
     } else if (topic === "/success") {
         count++;
+        console.log("success");
     }
 })
 
