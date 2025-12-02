@@ -120,7 +120,6 @@ mqttClient.on("message", (topic, msg) => {
 
     if (topic === TOPIC_SENSOR) {
         lastPayload = JSON.parse(message);
-        count++;
 
         // notify clients
         subscriptions.forEach(sub => {
@@ -139,7 +138,7 @@ mqttClient.on("message", (topic, msg) => {
     }
 
     if (topic === TOPIC_RESET) {
-        mqttClient.publish(TOPIC_RESET, resetFlag, { qos: 0 });
+        mqttClient.publish(TOPIC_RESET, "1", { qos: 0 });
         console.log("Reset command sent!");
         resetFlag = "0";
     }
