@@ -119,7 +119,7 @@ mqttClient.on("message", (topic, message) => {
     if (topic === "/test") {
 
         const payload = message.toString()
-        console.log(`${topic}: ${payload}`)
+        // console.log(`${topic}: ${payload}`)
         payloads.push(JSON.parse(payload))
         // count++
         // if ((JSON.parse(payload).n === 11)) {
