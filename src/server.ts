@@ -69,13 +69,7 @@ app.get("/", (req, res) => {
 let is_reset = "0";
 
 app.post("/publish", (req, res) => {
-    const { topic, message } = req.body;
     is_reset = "1";
-
-    if (!topic || !message) {
-        return res.status(400).json({ error: "Missing topic or message" });
-    }
-
     res.json({ success: true });
 });
 
