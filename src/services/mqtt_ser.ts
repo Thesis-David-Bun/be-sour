@@ -30,7 +30,7 @@ mqttClient.on("connect", () => {
 mqttClient.on("message", (topic, msg) => {
     const message = msg.toString();
 
-    const payload = JSON.parse(message);
+    let payload = JSON.parse(message);
 
     if (resetFlag === "1") {
         FL.reset_Q();
@@ -38,15 +38,15 @@ mqttClient.on("message", (topic, msg) => {
         successCount++;
     }
     const s = FL.infer(payload.fil_mean_H, payload.fil_mean_E, payload.fil_mean_T);
-
-    const t = { payload, s }
+    payload.status = s.status;
+    payload.crisp = s.crisp;
 
     PushService.notifyAll({
         title: s.status,
-        body: JSON.stringify(t),
+        body: JSON.stringify(payload),
         timestamp: Date.now()
     });
-    console.log(t);
+    console.log(payload);
 });
 
 export function sendResetSignal() {
