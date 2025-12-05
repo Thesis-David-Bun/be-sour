@@ -2,11 +2,11 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 
-import { subscribeRouter } from "./routers/subs";
-import { statusRouter } from "./routers/status";
-import { publishRouter } from "./routers/push";
+import { subscribeRouter } from "./routers/subs_rou.js";
+import { statusRouter } from "./routers/status.js";
+import { publishRouter } from "./routers/push.js";
 
-import "./services/mqtt"; // initialize MQTT
+import "./services/mqtt_ser.js"; // initialize MQTT
 
 const app = express();
 

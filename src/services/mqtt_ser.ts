@@ -1,8 +1,8 @@
 import mqtt from "mqtt";
-import { ENV } from "../config/env";
-import { MQTT_TOPICS } from "../config/env";
-import { PushService } from "./web_push";
-import { FuzzyLogic } from "../FuzzyLogic/FuzzyLogic";
+import { ENV } from "../config/env.js";
+import { MQTT_TOPICS } from "../config/env.js";
+import { PushService } from "./web_push.js";
+import { FuzzyLogic } from "../FuzzyLogic/FuzzyLogic.js";
 
 let resetFlag = "0";
 let successCount = 0;

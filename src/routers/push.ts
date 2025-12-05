@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sendResetSignal } from "../services/mqtt";
+import { sendResetSignal } from "../services/mqtt_ser.js";
 
 export const publishRouter = Router();
 

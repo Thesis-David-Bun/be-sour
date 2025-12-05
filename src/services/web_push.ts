@@ -1,6 +1,6 @@
 import webpush from "web-push";
-import { ENV } from "../config/env";
-import { SubscriptionService } from "./subs";
+import { ENV } from "../config/env.js";
+import { SubscriptionService } from "./subs_ser.js";
 
 webpush.setVapidDetails(
     "mailto:example@sourdough.com",
