@@ -40,6 +40,7 @@ mqttClient.on("message", (topic, msg) => {
     const s = FL.infer(payload.fil_mean_H, payload.fil_mean_E, payload.fil_mean_T);
     payload.status = s.status;
     payload.crisp = s.crisp;
+    payload.isNotify = s.isNotify;
 
     PushService.notifyAll({
         title: s.status,

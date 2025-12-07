@@ -112,6 +112,14 @@ export class FuzzyLogic {
         return this.riseLinear(x, 0.00, 0.20);
     }
 
+    private isNotif(x: string) {
+        let p = ("READY" === x) || ("READY_URGENT" === x) || ("READY_OPTIONAL" === x);
+        if (p) {
+            return true;
+        }
+        return false;
+    }
+
     // ===== HARD CODE RULES ===== 
     private Q = {
         isRising: false,
@@ -157,14 +165,14 @@ export class FuzzyLogic {
         }
 
         if (H <= this.P.overflowHeightThreshold || this.Q.eth_count >= this.P.ethanolSaturateNeeded) {
-            return { status: true, data: { crisp: -1, status: "OVERFLOW" } };
+            return { status: true, data: { crisp: -1, status: "OVERFLOW", isNotify: true } };
         }
 
         if (this.Q.no_rise_count >= 6) {
-            return { status: true, data: { crisp: -1, status: "REFEED" } };
+            return { status: true, data: { crisp: -1, status: "REFEED", isNotify: true } };
         }
 
-        return { status: false, data: { crisp: -1, status: "" } };
+        return { status: false, data: { crisp: -1, status: "", isNotify: false } };
     }
 
     public reset_Q() {
@@ -231,6 +239,7 @@ export class FuzzyLogic {
         else if (crisp > 0.55) state = "READY_OPTIONAL";
         else if (crisp > 0.30) state = "NOT_READY";
 
-        return { crisp, status: state };
+        let isNotify = this.isNotif(state);
+        return { crisp, status: state, isNotify };
     }
 }
