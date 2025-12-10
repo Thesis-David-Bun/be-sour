@@ -199,9 +199,9 @@ export class FuzzyLogic {
         const W = this.tempWarm(T);
         const Ht = this.tempHot(T);
 
-        const RL = this.riseHigh(H);
+        const RL = this.riseLow(H);
         const RM = this.riseMed(H);
-        const RH = this.riseLow(H);
+        const RH = this.riseHigh(H);
 
         const EL = this.ethLow(E);
         const EM = this.ethMed(E);
@@ -214,11 +214,11 @@ export class FuzzyLogic {
         const r_feedAgain = Math.min(RM, Math.max(EM, EH));
         const r_notReady = Math.min(RL, Math.max(EM, EH));
 
-        console.log("ready" + r_ready);
-        console.log("r_readyOpt" + r_readyOpt);
-        console.log("r_readyUrg" + r_readyUrg);
-        console.log("r_feedAgain" + r_feedAgain);
-        console.log("r_notReady" + r_notReady);
+        console.log("ready " + r_ready);
+        console.log("r_readyOpt " + r_readyOpt);
+        console.log("r_readyUrg " + r_readyUrg);
+        console.log("r_feedAgain " + r_feedAgain);
+        console.log("r_notReady " + r_notReady);
 
         // 3. Mamdani Aggregation + Centroid Defuzzification
         let num = 0, den = 0;
