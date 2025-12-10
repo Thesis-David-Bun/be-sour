@@ -214,6 +214,12 @@ export class FuzzyLogic {
         const r_feedAgain = Math.min(RM, Math.max(EM, EH));
         const r_notReady = Math.min(RL, Math.max(EM, EH));
 
+        console.log("ready" + r_ready);
+        console.log("r_readyOpt" + r_readyOpt);
+        console.log("r_readyUrg" + r_readyUrg);
+        console.log("r_feedAgain" + r_feedAgain);
+        console.log("r_notReady" + r_notReady);
+
         // 3. Mamdani Aggregation + Centroid Defuzzification
         let num = 0, den = 0;
         for (let i = 0; i <= this.OUT_STEPS; i++) {
