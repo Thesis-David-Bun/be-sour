@@ -3,6 +3,8 @@ import { ENV } from "../config/env.js";
 import { MQTT_TOPICS } from "../config/env.js";
 import { PushService } from "./web_push.js";
 import { FuzzyLogic } from "../FuzzyLogic/FuzzyLogic.js";
+import { Q } from "../FuzzyLogic/Fuzzy_env.js";
+import type { RawFuzzyInput } from "../FuzzyLogic/Fuzzy_env.js";
 
 let resetFlag = "0";
 let successCount = 0;
@@ -33,11 +35,14 @@ mqttClient.on("message", (topic, msg) => {
     let payload = JSON.parse(message);
 
     if (resetFlag === "1") {
-        FL.reset_Q();
+        FL.reset();
         resetFlag = "0";
         successCount++;
     }
-    const s = FL.infer(payload.fil_mean_H, payload.fil_mean_E, payload.fil_mean_T);
+
+    FL.raw_input_pre_processing(payload);
+    const input_fl = FL.input_pre_processing(Q);
+    const s = FL.infer(input_fl);
     payload.status = s.status;
     payload.crisp = s.crisp;
     payload.isNotify = s.isNotify;

@@ -1,251 +1,264 @@
+import type { FuzzyInput, FuzzyOutput, FuzzyState, RawFuzzyInput } from "./Fuzzy_env";
+import { P, Q } from "./Fuzzy_env";
 // FuzzyLogic.ts
 // Pure Mamdani fuzzy logic implementation (no device state)
 
-export type FuzzyOutput =
-    | "READY"
-    | "READY_URGENT"
-    | "READY_OPTIONAL"
-    | "NOT_READY"
-    | "FEED_AGAIN";
-
 export class FuzzyLogic {
     private OUT_STEPS = 200;
-
-    private P = {
-        // --- Fuzzy thresholds (inputs) ---
-        // Temperature (°C)
-        T_low_max: 29.0,
-        T_med_min: 29.0,
-        T_med_max: 33.0,
-        T_high_min: 33.0,
-
-        // Delta height (mm)
-        H_low_max: 140.0,
-        H_med_min: 140.0,
-        H_med_max: 160.0,
-        H_high_min: 160.0,
-
-        // Ethanol (assume scaled 0..4095 OR ppm), thresholds chosen as raw ADC-ish
-        E_low_max: 2000.0,
-        E_med_min: 2000.0,
-        E_med_max: 3000.0,
-        E_high_min: 3000.0,
-
-        overflowHeightThreshold: 90,
-        ethanolSaturateValue: 4095, // raw ADC saturation
-        ethanolSaturateNeeded: 3, // count threshold
-
-        // For rise/fall detection (compare last delta to current)
-        riseEpsilon: 0.5,  // mm difference to consider change
-        fallEpsilon: -0.5,
-        // Small meaningful rise
-        minMeaningfulDelta: 0.1,  // mm
-    };
-
     // ===== Membership Helpers =====
+    // linear ramp from 0 at x0 to 1 at x1
     private riseLinear(x: number, x0: number, x1: number): number {
         if (x <= x0) return 0;
         if (x >= x1) return 1;
         return (x - x0) / (x1 - x0);
     }
 
+    // linear ramp from 1 at x0 down to 0 at x1
     private fallLinear(x: number, x0: number, x1: number): number {
         if (x <= x0) return 1;
         if (x >= x1) return 0;
         return (x1 - x) / (x1 - x0);
     }
 
+    // triangular MF centered at mid with base [a, c] and peak at b
+    private tri(x: number, a: number, b: number, c: number) {
+        if (x <= a || x >= c) return 0;
+        if (x === b) return 1;
+        if (x < b) return (x - a) / (b - a);
+        return (c - x) / (c - b);
+    }
+
+    private trapezoid(x: number, a: number, b: number, c: number, d: number) {
+        if (x <= a || x >= d) return 0;
+        if (x >= b && x <= c) return 1;
+        if (x > a && x < b) return (x - a) / (b - a);
+        // x > c && x < d
+        return (d - x) / (d - c);
+    }
+
     // ===== INPUT MEMBERSHIP =====
     // Temperature
     private tempCold(T: number) {
-        return this.fallLinear(T, this.P.T_low_max, this.P.T_med_min);
+        return this.fallLinear(T, P.T_low_max, P.T_med_min);
     }
     private tempWarm(T: number) {
-        const mid = (this.P.T_med_min + this.P.T_med_max) * 0.5;
-        return Math.min(
-            this.riseLinear(T, this.P.T_med_min, mid),
-            this.fallLinear(T, mid, this.P.T_med_max)
-        );
+        const mid = (P.T_med_min + P.T_med_max) * 0.5;
+        return this.tri(T, P.T_med_min, mid, P.T_med_max);
     }
     private tempHot(T: number) {
-        return this.riseLinear(T, this.P.T_high_min, this.P.T_high_min + 3);
+        return this.riseLinear(T, P.T_high_min, P.T_high_min + 3);
     }
 
     // Height (deltaH)
-    private riseLow(H: number) {
-        return this.fallLinear(H, this.P.H_low_max, this.P.H_med_min);
+    private heightLow(H: number) {
+        return this.fallLinear(H, P.H_low_max, P.H_med_min);
     }
-    private riseMed(H: number) {
-        const mid = (this.P.H_med_min + this.P.H_med_max) * 0.5;
-        return Math.min(this.riseLinear(H, this.P.H_med_min, mid), this.fallLinear(H, mid, this.P.H_med_max));
+    private heightMed(H: number) {
+        const mid = (P.H_med_min + P.H_med_max) * 0.5;
+        return this.tri(H, P.H_med_min, mid, P.H_med_max);
     }
-    private riseHigh(H: number) {
-        return this.riseLinear(H, this.P.H_high_min, this.P.H_high_min + 10);
+    private heightHigh(H: number) {
+        return this.riseLinear(H, P.H_high_min, P.H_high_min + 10);
     }
 
     // Ethanol
     private ethLow(E: number) {
-        return this.fallLinear(E, this.P.E_low_max, this.P.E_med_min);
+        return this.fallLinear(E, P.E_low_max, P.E_med_min);
     }
     private ethMed(E: number) {
-        const mid = (this.P.E_med_max + this.P.E_med_min) * 0.5;
-        return Math.min(this.riseLinear(E, this.P.E_med_min, mid), this.fallLinear(E, mid, this.P.E_med_max));
+        const mid = (P.E_med_max + P.E_med_min) * 0.5;
+        return this.tri(E, P.E_med_min, mid, P.E_med_max);
     }
     private ethHigh(E: number) {
-        return this.riseLinear(E, this.P.E_high_min, this.P.E_high_min + 200);
+        return this.riseLinear(E, P.E_high_min, P.E_high_min + 200);
     }
+
+    // Rise Rate: Falling / Stagnant / Rising
+    private rrFalling(RR: number) {
+        // strong falling below P_RR_fall-1
+        return this.fallLinear(RR, P.RR_fall - 2, P.RR_fall);
+    }
+    private rrStagnant(RR: number) {
+        // trapezoid around [-P_RR_dead_margin..+P_RR_dead_margin]
+        const a = P.RR_fall / 2; // negative
+        const d = P.RR_rise / 2; // positive
+        return this.trapezoid(RR, a, -P.RR_dead_margin, P.RR_dead_margin, d);
+    }
+    private rrRising(RR: number) {
+        return this.riseLinear(RR, P.RR_rise, P.RR_rise + 5);
+    }
+
+    // Stagnation Counter fuzzy
+    private scLow(SC: number) {
+        return this.fallLinear(SC, P.SC_low, P.SC_med);
+    }
+    private scMed(SC: number) {
+        return this.tri(SC, P.SC_low, P.SC_med, P.SC_high);
+    }
+    private scHigh(SC: number) {
+        return this.riseLinear(SC, P.SC_high - 1, P.SC_high);
+    }
+
+    // Peak Achieved (0..1) -> binaryish fuzzy
+    private paNo(pa: number) { return (1 - pa); }
+    private paYes(pa: number) { return pa; }
 
     // ===== OUTPUT MEMBERSHIP =====
-    private mfReady(x: number) {
-        return this.riseLinear(x, 0.60, 0.80);
-    }
-    private mfReadyUrgent(x: number) {
-        return this.riseLinear(x, 0.80, 1.00);
-    }
-    private mfReadyOptional(x: number) {
-        return this.riseLinear(x, 0.40, 0.60);
-    }
-    private mfNotReady(x: number) {
-        return this.riseLinear(x, 0.20, 0.40);
-    }
-    private mfFeedAgain(x: number) {
-        return this.riseLinear(x, 0.00, 0.20);
+    private mfFeedAgain(x: number) { return this.riseLinear(x, 0.00, 0.20); }
+    private mfNotReady(x: number) { return this.riseLinear(x, 0.20, 0.40); }
+    private mfReadyOptional(x: number) { return this.riseLinear(x, 0.40, 0.60); }
+    private mfReady(x: number) { return this.riseLinear(x, 0.60, 0.80); }
+    private mfReadyUrgent(x: number) { return this.riseLinear(x, 0.80, 1.00); }
+    private mfDead(x: number) { return this.riseLinear(x, 0.00, 0.10); } // small left-end region
+
+    // ==== PRE / PROCESSING MEMBERSHIP ====
+    public reset() {
+
     }
 
-    private isNotif(x: string) {
-        let p = ("READY" === x) || ("READY_URGENT" === x) || ("READY_OPTIONAL" === x);
-        if (p) {
-            return true;
+    public raw_input_pre_processing(x: RawFuzzyInput) {
+        if (P.is_delta) {
+            Q.prev_fil_mean_E = Q.fil_mean_E;
+            Q.prev_fil_mean_H = Q.fil_mean_H;
+            Q.prev_fil_mean_T = Q.fil_mean_T;
+            Q.prev_raw_mean_E = Q.raw_mean_E;
+            Q.prev_raw_mean_H = Q.raw_mean_H;
+            Q.prev_raw_mean_T = Q.raw_mean_T;
         }
-        return false;
-    }
-
-    // ===== HARD CODE RULES ===== 
-    private Q = {
-        isRising: false,
-        isFalling: false,
-        hasPeaked: false,
-        last_H: 0,
-        peak_H: 0,
-        eth_count: 0,
-        no_rise_count: 0,
-    }
-
-    private safetyRules(H: number, E: number, T: number) {
-        const diff = this.Q.last_H - H;
-
-        if (diff >= this.P.riseEpsilon) {
-            this.Q.isRising = true;
-        } else if (diff < this.P.fallEpsilon) {
-            this.Q.isFalling = true;
-        } else if (Math.abs(diff) <= this.P.minMeaningfulDelta) {
-            this.Q.isRising = false;
+        Q.fil_mean_E = x.fil_mean_E;
+        Q.fil_mean_H = x.fil_mean_H;
+        Q.fil_mean_T = x.fil_mean_T;
+        Q.raw_mean_E = x.raw_mean_E;
+        Q.raw_mean_H = x.raw_mean_H;
+        Q.raw_mean_T = x.raw_mean_T;
+        if (!P.is_delta) {
+            P.is_delta = true;
         }
+    }
 
-        if (this.Q.isRising) {
-            if (H > this.Q.peak_H) {
-                this.Q.peak_H = H;
-            }
-            this.Q.no_rise_count = 0;
-            this.Q.hasPeaked = false;
+    public input_pre_processing(x: RawFuzzyInput): FuzzyInput {
+        if (Math.abs(x.fil_mean_H - x.prev_fil_mean_H) <= P.minMeaningfulDelta) {
+            P.stagnationCounter += 1;
         } else {
-            if (this.Q.isFalling && (this.Q.peak_H > 0) && !this.Q.hasPeaked) {
-                this.Q.hasPeaked = true;
-            }
-
-            if (Math.abs(diff) <= this.P.minMeaningfulDelta) {
-                this.Q.no_rise_count += 1;
-            }
+            P.stagnationCounter = 0;
         }
 
-        if (E >= this.P.ethanolSaturateValue) {
-            this.Q.eth_count += 1;
-        } else {
-            this.Q.eth_count = 0;
+        const rise = x.fil_mean_H - x.prev_fil_mean_H;
+        if ((x.fil_mean_H > P.last_peak_H)) {
+            P.last_peak_H = x.fil_mean_H;
         }
 
-        if (H <= this.P.overflowHeightThreshold || this.Q.eth_count >= this.P.ethanolSaturateNeeded) {
-            return { status: true, data: { crisp: -1, status: "OVERFLOW", isNotify: true } };
+        if ((rise < P.fallEpsilon) && (P.last_peak_H > 0) && !P.has_peaked) {
+            P.has_peaked = 1;
         }
-
-        if (this.Q.no_rise_count >= 6) {
-            return { status: true, data: { crisp: -1, status: "REFEED", isNotify: true } };
-        }
-
-        return { status: false, data: { crisp: -1, status: "", isNotify: false } };
-    }
-
-    public reset_Q() {
-        this.Q = {
-            isRising: false,
-            isFalling: false,
-            hasPeaked: false,
-            last_H: 0,
-            peak_H: 0,
-            eth_count: 0,
-            no_rise_count: 0,
+        return {
+            tempC: x.fil_mean_T,
+            deltaH: x.fil_mean_H,
+            ethanol: x.fil_mean_E,
+            peakAchieved: P.has_peaked,
+            riseRate: x.fil_mean_H - x.prev_fil_mean_H,
+            stagnationCounter: P.stagnationCounter
         };
     }
 
     // ===== INFERENCE =====
-    public infer(H: number, E: number, T: number) {
-        const temp = this.safetyRules(H, E, T);
-        if (temp.status) {
-            return temp.data;
-        }
+    public infer(input: FuzzyInput): FuzzyOutput {
+        const { tempC, deltaH, ethanol, riseRate, stagnationCounter, peakAchieved } = input;
 
         // 1. Evaluate membership degrees
-        const C = this.tempCold(T);
-        const W = this.tempWarm(T);
-        const Ht = this.tempHot(T);
+        const T_cold = this.tempCold(tempC);
+        const T_warm = this.tempWarm(tempC);
+        const T_hot = this.tempHot(tempC);
 
-        const RL = this.riseLow(H);
-        const RM = this.riseMed(H);
-        const RH = this.riseHigh(H);
+        const H_low = this.heightLow(deltaH);
+        const H_med = this.heightMed(deltaH);
+        const H_high = this.heightHigh(deltaH);
 
-        const EL = this.ethLow(E);
-        const EM = this.ethMed(E);
-        const EH = this.ethHigh(E);
+        const E_low = this.ethLow(ethanol);
+        const E_med = this.ethMed(ethanol);
+        const E_high = this.ethHigh(ethanol);
 
-        // 2. Rule Base
-        const r_ready = Math.min(W, Math.min(RH, EH));
-        const r_readyOpt = Math.min(C, Math.min(RH, EH));
-        const r_readyUrg = Math.min(Ht, Math.min(RH, EH));
-        const r_feedAgain = Math.min(RM, Math.max(EM, EH));
-        const r_notReady = Math.min(RL, Math.max(EM, EH));
+        const RR_fall = this.rrFalling(riseRate);
+        const RR_stag = this.rrStagnant(riseRate);
+        const RR_rise = this.rrRising(riseRate);
 
-        console.log("ready " + r_ready);
-        console.log("r_readyOpt " + r_readyOpt);
-        console.log("r_readyUrg " + r_readyUrg);
-        console.log("r_feedAgain " + r_feedAgain);
-        console.log("r_notReady " + r_notReady);
+        const SC_low = this.scLow(stagnationCounter);
+        const SC_med = this.scMed(stagnationCounter);
+        const SC_high = this.scHigh(stagnationCounter);
+
+        const PA_no = this.paNo(peakAchieved);
+        const PA_yes = this.paYes(peakAchieved);
+
+
+        // 2) rule activations (Mamdani antecedents)
+        // A. READY family
+        const r_readyUrg = Math.min(T_hot, H_high, E_high, RR_rise);      // urgent
+        const r_ready = Math.min(T_warm, H_high, E_high, RR_rise);     // normal ready
+        const r_readyOpt = Math.min(T_cold, H_high, E_high, RR_rise);     // usable but optional
+
+        // B. FEED / NOT READY family
+        const r_feedFromMed = Math.min(H_med, Math.max(E_med, E_high), RR_rise); // medium rise + ethanol -> feed suggested
+        const r_notReadyEarly = Math.min(H_med, E_low, RR_rise); // early-stage rising but ethanol low -> not ready
+        const r_feedWeak = Math.min(H_high, E_low); // high rise but low ethanol -> weak starter => feed again
+
+        // C. FALL / COLLAPSE (after peak)
+        const r_fallAfterPeak = Math.min(RR_fall, H_high, PA_yes);
+
+        // D. STAGNATION & DEAD
+        const r_dead1 = Math.min(RR_stag, E_high, SC_high); // stagnant + high ethanol + many stagnant -> dead
+        const r_dead2 = Math.min(RR_stag, H_med, E_high, PA_no); // stagnant mid-rise, high ethanol, never peaked -> likely dead
+
+        // E. JUST-FED / NOT_READY
+        const r_justFed = Math.min(H_low, E_low, RR_stag, SC_low);
+
 
         // 3. Mamdani Aggregation + Centroid Defuzzification
         let num = 0, den = 0;
         for (let i = 0; i <= this.OUT_STEPS; i++) {
             const x = i / this.OUT_STEPS;
-            const miu_ready = Math.min(r_ready, this.mfReady(x));
-            const miu_readyUrg = Math.min(r_readyUrg, this.mfReadyUrgent(x));
-            const miu_readyOpt = Math.min(r_readyOpt, this.mfReadyOptional(x));
-            const miu_notReady = Math.min(r_notReady, this.mfNotReady(x));
-            const miu_feedAgain = Math.min(r_feedAgain, this.mfFeedAgain(x));
 
-            const miu = Math.max(miu_ready, Math.max(miu_readyUrg, Math.max(miu_readyOpt, Math.max(miu_notReady, miu_feedAgain))));
+            // compute clipped membership per rule -> min(rule_strength, outputMF(x))
+            const mu_readyUrg = Math.min(r_readyUrg, this.mfReadyUrgent(x));
+            const mu_ready = Math.min(r_ready, this.mfReady(x));
+            const mu_readyOpt = Math.min(r_readyOpt, this.mfReadyOptional(x));
 
-            num += x * miu;
-            den += miu;
+            const mu_feedFromMed = Math.min(r_feedFromMed, this.mfFeedAgain(x));
+            const mu_notReadyEarly = Math.min(r_notReadyEarly, this.mfNotReady(x));
+            const mu_feedWeak = Math.min(r_feedWeak, this.mfFeedAgain(x));
+
+            const mu_fallAfterPeak = Math.min(r_fallAfterPeak, this.mfFeedAgain(x)); // treat collapse as feed-again
+            const mu_dead1 = Math.min(r_dead1, this.mfDead(x));
+            const mu_dead2 = Math.min(r_dead2, this.mfDead(x));
+            const mu_justFed = Math.min(r_justFed, this.mfNotReady(x));
+
+            // aggregate (max of all clipped mfs)
+            const mu = Math.max(
+                mu_readyUrg,
+                mu_ready,
+                mu_readyOpt,
+                mu_feedFromMed,
+                mu_notReadyEarly,
+                mu_feedWeak,
+                mu_fallAfterPeak,
+                mu_dead1,
+                mu_dead2,
+                mu_justFed
+            );
+
+            num += x * mu;
+            den += mu;
         }
 
         const crisp = den === 0 ? 0 : num / den;
 
         // 4. Crisp → Category
-        let state: FuzzyOutput = "FEED_AGAIN";
-        if (crisp > 0.85) state = "READY_URGENT";
-        else if (crisp > 0.70) state = "READY";
-        else if (crisp > 0.55) state = "READY_OPTIONAL";
-        else if (crisp > 0.30) state = "NOT_READY";
+        let status: FuzzyState = "FEED_AGAIN";
+        if (crisp > 0.85) status = "READY_URGENT";
+        else if (crisp > 0.70) status = "READY";
+        else if (crisp > 0.55) status = "READY_OPTIONAL";
+        else if (crisp > 0.30) status = "NOT_READY";
 
-        let isNotify = this.isNotif(state);
-        return { crisp, status: state, isNotify };
+        const isNotify = P.has_peaked === 1 ? true : false;
+        return { crisp, status, isNotify };
     }
 }
