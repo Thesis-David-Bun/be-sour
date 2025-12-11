@@ -3,7 +3,7 @@ import { ENV } from "../config/env.js";
 import { MQTT_TOPICS } from "../config/env.js";
 import { PushService } from "./web_push.js";
 import { FuzzyLogic } from "../FuzzyLogic/FuzzyLogic.js";
-import { Q } from "../FuzzyLogic/Fuzzy_env.js";
+import { Q } from "../FuzzyLogic/FuzzyEnv.js";
 
 let resetFlag = "0";
 let successCount = 0;

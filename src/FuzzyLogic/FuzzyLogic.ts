@@ -1,5 +1,5 @@
-import type { FuzzyInput, FuzzyOutput, FuzzyState, RawFuzzyInput } from "./Fuzzy_env.js";
-import { MAP, P, Q, Q_def } from "./Fuzzy_env.js";
+import type { FuzzyInput, FuzzyOutput, FuzzyState, RawFuzzyInput } from "./FuzzyEnv.js";
+import { MAP, P, Q, Q_def } from "./FuzzyEnv.js";
 // FuzzyLogic.ts
 // Pure Mamdani fuzzy logic implementation (no device state)
 
