@@ -51,11 +51,12 @@ export const Q: RawFuzzyInput = {
     raw_mean_T: 0,
 }
 
+export const Q_def = Q;
+
 export const P = {
     stagnationCounter: 0,
     last_peak_H: 0,
     has_peaked: 0,
-
     is_delta: false,
 
     // --- Fuzzy thresholds (inputs) ---
@@ -97,3 +98,11 @@ export const P = {
     // Small meaningful rise
     minMeaningfulDelta: 0.2,  // mm
 }
+
+export const MAP = {
+    URGENT: 0.85,
+    READY: 0.70,
+    OPTIONAL: 0.55,
+    NOTREADY: 0.30,
+    FEED: 0.15,
+};

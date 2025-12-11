@@ -4,7 +4,6 @@ import { MQTT_TOPICS } from "../config/env.js";
 import { PushService } from "./web_push.js";
 import { FuzzyLogic } from "../FuzzyLogic/FuzzyLogic.js";
 import { Q } from "../FuzzyLogic/Fuzzy_env.js";
-import type { RawFuzzyInput } from "../FuzzyLogic/Fuzzy_env.js";
 
 let resetFlag = "0";
 let successCount = 0;

@@ -1,5 +1,5 @@
 import type { FuzzyInput, FuzzyOutput, FuzzyState, RawFuzzyInput } from "./Fuzzy_env.js";
-import { P, Q } from "./Fuzzy_env.js";
+import { MAP, P, Q, Q_def } from "./Fuzzy_env.js";
 // FuzzyLogic.ts
 // Pure Mamdani fuzzy logic implementation (no device state)
 
@@ -113,7 +113,13 @@ export class FuzzyLogic {
 
     // ==== PRE / PROCESSING MEMBERSHIP ====
     public reset() {
-
+        Object.keys(Q).forEach(key => {
+            Q[key] = Q_def[key];
+        });
+        P.stagnationCounter = 0;
+        P.last_peak_H = 0;
+        P.has_peaked = 0;
+        P.is_delta = false;
     }
 
     public raw_input_pre_processing(x: RawFuzzyInput) {
@@ -252,11 +258,13 @@ export class FuzzyLogic {
         const crisp = den === 0 ? 0 : num / den;
 
         // 4. Crisp → Category
-        let status: FuzzyState = "FEED_AGAIN";
-        if (crisp > 0.85) status = "READY_URGENT";
-        else if (crisp > 0.70) status = "READY";
-        else if (crisp > 0.55) status = "READY_OPTIONAL";
-        else if (crisp > 0.30) status = "NOT_READY";
+        let status: FuzzyState;
+        if (crisp >= MAP.URGENT) status = "READY_URGENT";
+        else if (crisp >= MAP.READY) status = "READY";
+        else if (crisp >= MAP.OPTIONAL) status = "READY_OPTIONAL";
+        else if (crisp >= MAP.NOTREADY) status = "NOT_READY";
+        else if (crisp >= MAP.FEED) status = "FEED_AGAIN";
+        else status = "DEAD";
 
         const isNotify = P.has_peaked === 1 ? true : false;
         return { crisp, status, isNotify };
