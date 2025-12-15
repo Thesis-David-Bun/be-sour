@@ -85,9 +85,17 @@ mqttClient.on("message", (topic, msg) => {
         body: JSON.stringify(payload),
         timestamp: Date.now()
     });
-    console.log(payload);
-    console.log(input_fl);
+    printJSON(payload);
+    printJSON(input_fl);
 });
+
+function printJSON(x: any) {
+    console.log('{');
+    Object.keys(x).forEach(key => {
+        console.log(key + " : " + x[key]);
+    });
+    console.log('}');
+}
 
 export function sendResetSignal() {
     resetFlag = "1";

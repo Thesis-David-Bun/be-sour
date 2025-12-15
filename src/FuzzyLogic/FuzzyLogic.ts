@@ -222,6 +222,16 @@ export class FuzzyLogic {
         // E. JUST-FED / NOT_READY
         const r_justFed = Math.min(H_low, E_low, RR_stag, SC_low);
 
+        console.log('r_ready: ' + r_ready);
+        console.log('r_readyUrg' + r_readyUrg);
+        console.log('r_readyOpt' + r_readyOpt);
+        console.log('r_feedFromMed' + r_feedFromMed);
+        console.log('r_notReadyEarly' + r_notReadyEarly);
+        console.log('r_feedWeak' + r_feedWeak);
+        console.log('r_fallAfterPeak' + r_fallAfterPeak);
+        console.log('r_dead1' + r_dead1);
+        console.log('r_dead2' + r_dead2);
+        console.log('r_justFed' + r_justFed);
 
         // 3. Mamdani Aggregation + Centroid Defuzzification
         let num = 0, den = 0;
