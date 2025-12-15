@@ -121,10 +121,10 @@ export class FuzzyLogic {
         P.has_peaked = 0;
         P.is_delta = false;
 
-        P.H_low_max = x.fil_mean_H;
-        P.H_med_min = x.fil_mean_H;
-        P.H_med_max = x.fil_mean_H * 3;
-        P.H_high_min = x.fil_mean_H * 3;
+        // P.H_low_max = x.fil_mean_H;
+        // P.H_med_min = x.fil_mean_H;
+        // P.H_med_max = x.fil_mean_H * 3;
+        // P.H_high_min = x.fil_mean_H * 3;
     }
 
     public raw_input_pre_processing(x: RawFuzzyInput) {
