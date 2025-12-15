@@ -13,6 +13,7 @@ export interface FuzzyInput {
     riseRate: number;         // mm since last sample (H[n] - H[n-1])
     stagnationCounter: number;// integer count of consecutive stagnant readings
     peakAchieved: number;     // 0 or 1 (or fractional 0..1)
+    overFlow: number;
 };
 
 export interface FuzzyOutput {
@@ -58,6 +59,7 @@ export const P = {
     last_peak_H: 0,
     has_peaked: 0,
     is_delta: false,
+    is_overflow: 0,
 
     // --- Fuzzy thresholds (inputs) ---
     // Temperature (°C)
@@ -67,10 +69,10 @@ export const P = {
     T_high_min: 33.0,
 
     // Delta height (mm)
-    H_low_max: 200.0,
-    H_med_min: 180.0,
-    H_med_max: 200.0,
-    H_high_min: 180.0,
+    H_low_max: 3.0,
+    H_med_min: 3.0,
+    H_med_max: 9.0,
+    H_high_min: 9.0,
 
     // Ethanol (assume scaled 0..4095 OR ppm), thresholds chosen as raw ADC-ish
     E_low_max: 2000.0,
@@ -97,6 +99,10 @@ export const P = {
     fallEpsilon: -0.5,
     // Small meaningful rise
     minMeaningfulDelta: 0.2,  // mm
+
+    // baseline
+    bottonJarValue: 203,
+    topJarValue: 109,
 }
 
 export const MAP = {
@@ -106,3 +112,45 @@ export const MAP = {
     NOTREADY: 0.30,
     FEED: 0.15,
 };
+
+export const INFER_IO = {
+    T_cold: 0,
+    T_warm: 0,
+    T_hot: 0,
+    H_low: 0,
+    H_med: 0,
+    H_high: 0,
+    E_low: 0,
+    E_med: 0,
+    E_high: 0,
+    RR_fall: 0,
+    RR_stag: 0,
+    RR_rise: 0,
+    SC_low: 0,
+    SC_med: 0,
+    SC_high: 0,
+    PA_no: 0,
+    PA_yes: 0,
+    r_ready: 0,
+    r_readyUrg: 0,
+    r_readyOpt: 0,
+    r_feedFromMed: 0,
+    r_notReadyEarly: 0,
+    r_feedWeak: 0,
+    r_fallAfterPeak: 0,
+    r_dead1: 0,
+    r_dead2: 0,
+    r_justFed1: 0,
+    r_justFed2: 0,
+    mu_readyUrg: 0,
+    mu_ready: 0,
+    mu_readyOpt: 0,
+    mu_feedFromMed: 0,
+    mu_notReadyEarly: 0,
+    mu_feedWeak: 0,
+    mu_fallAfterPeak: 0,
+    mu_dead1: 0,
+    mu_dead2: 0,
+    mu_justFed1: 0,
+    mu_justFed2: 0,
+}

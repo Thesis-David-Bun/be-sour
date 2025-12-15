@@ -51,14 +51,14 @@ export class FuzzyLogic {
 
     // Height (deltaH)
     private heightLow(H: number) {
-        return this.riseLinear(H, P.H_med_max, P.H_low_max);
+        return this.fallLinear(H, P.H_low_max, P.H_med_min);
     }
     private heightMed(H: number) {
         const mid = (P.H_med_min + P.H_med_max) * 0.5;
         return this.tri(H, P.H_med_min, mid, P.H_med_max);
     }
     private heightHigh(H: number) {
-        return this.fallLinear(H, P.H_high_min, P.H_med_min);
+        return this.riseLinear(H, P.H_high_min, P.H_high_min + 5);
     }
 
     // Ethanol
@@ -121,10 +121,11 @@ export class FuzzyLogic {
         P.has_peaked = 0;
         P.is_delta = false;
 
-        // P.H_low_max = x.fil_mean_H;
-        // P.H_med_min = x.fil_mean_H;
-        // P.H_med_max = x.fil_mean_H * 3;
-        // P.H_high_min = x.fil_mean_H * 3;
+        const deltaH = P.bottonJarValue - x.fil_mean_H;
+        P.H_low_max = deltaH;
+        P.H_med_min = deltaH;
+        P.H_med_max = deltaH * 3;
+        P.H_high_min = deltaH * 3;
     }
 
     public raw_input_pre_processing(x: RawFuzzyInput) {
@@ -148,27 +149,35 @@ export class FuzzyLogic {
     }
 
     public input_pre_processing(x: RawFuzzyInput): FuzzyInput {
-        if (Math.abs(x.fil_mean_H - x.prev_fil_mean_H) <= P.minMeaningfulDelta) {
+        const deltaH = P.bottonJarValue - x.fil_mean_H;
+        const prev_deltaH = P.bottonJarValue - x.prev_fil_mean_H;
+        if (Math.abs(deltaH - prev_deltaH) <= P.minMeaningfulDelta) {
             P.stagnationCounter += 1;
         } else {
             P.stagnationCounter = 0;
         }
 
-        const rise = x.fil_mean_H - x.prev_fil_mean_H;
-        if ((x.fil_mean_H > P.last_peak_H)) {
-            P.last_peak_H = x.fil_mean_H;
+        const rise = deltaH - prev_deltaH;
+        if ((deltaH > P.last_peak_H)) {
+            P.last_peak_H = deltaH;
         }
 
         if ((rise < P.fallEpsilon) && (P.last_peak_H > 0) && !P.has_peaked) {
             P.has_peaked = 1;
         }
+
+        if (deltaH >= P.overflowHeightThreshold) {
+            P.is_overflow = 1;
+        }
+
         return {
             tempC: x.fil_mean_T,
-            deltaH: x.fil_mean_H,
+            deltaH: deltaH,
             ethanol: x.fil_mean_E,
             peakAchieved: P.has_peaked,
-            riseRate: x.fil_mean_H - x.prev_fil_mean_H,
-            stagnationCounter: P.stagnationCounter
+            riseRate: deltaH - prev_deltaH,
+            stagnationCounter: P.stagnationCounter,
+            overFlow: P.is_overflow
         };
     }
 
@@ -180,26 +189,42 @@ export class FuzzyLogic {
         const T_cold = this.tempCold(tempC);
         const T_warm = this.tempWarm(tempC);
         const T_hot = this.tempHot(tempC);
+        console.log('T_cold :' + T_cold);
+        console.log('T_hot :' + T_hot);
+        console.log('T_warm :' + T_warm);
 
         const H_low = this.heightLow(deltaH);
         const H_med = this.heightMed(deltaH);
         const H_high = this.heightHigh(deltaH);
+        console.log('H_low :' + H_low);
+        console.log('H_med :' + H_med);
+        console.log('H_high :' + H_high);
 
         const E_low = this.ethLow(ethanol);
         const E_med = this.ethMed(ethanol);
         const E_high = this.ethHigh(ethanol);
+        console.log('E_low :' + E_low);
+        console.log('E_med :' + E_med);
+        console.log('E_high :' + E_high);
 
         const RR_fall = this.rrFalling(riseRate);
         const RR_stag = this.rrStagnant(riseRate);
         const RR_rise = this.rrRising(riseRate);
+        console.log('RR_fall :' + RR_fall);
+        console.log('RR_stag :' + RR_stag);
+        console.log('RR_rise :' + RR_rise);
 
         const SC_low = this.scLow(stagnationCounter);
         const SC_med = this.scMed(stagnationCounter);
         const SC_high = this.scHigh(stagnationCounter);
+        console.log('SC_low :' + SC_low);
+        console.log('SC_med :' + SC_med);
+        console.log('SC_high :' + SC_high);
 
         const PA_no = this.paNo(peakAchieved);
         const PA_yes = this.paYes(peakAchieved);
-
+        console.log('PA_no :' + PA_no);
+        console.log('PA_yes :' + PA_yes);
 
         // 2) rule activations (Mamdani antecedents)
         // A. READY family
@@ -220,9 +245,10 @@ export class FuzzyLogic {
         const r_dead2 = Math.min(RR_stag, H_med, E_high, PA_no); // stagnant mid-rise, high ethanol, never peaked -> likely dead
 
         // E. JUST-FED / NOT_READY
-        const r_justFed = Math.min(H_low, Math.max(E_low, E_med), RR_stag, SC_low);
+        const r_justFed1 = Math.min(H_low, Math.max(E_low, E_med), RR_stag, SC_low);
+        const r_justFed2 = Math.min(H_low, Math.max(E_low, E_med));
 
-        console.log('r_ready: ' + r_ready);
+        console.log('r_ready :' + r_ready);
         console.log('r_readyUrg :' + r_readyUrg);
         console.log('r_readyOpt :' + r_readyOpt);
         console.log('r_feedFromMed :' + r_feedFromMed);
@@ -231,7 +257,8 @@ export class FuzzyLogic {
         console.log('r_fallAfterPeak :' + r_fallAfterPeak);
         console.log('r_dead1 :' + r_dead1);
         console.log('r_dead2 :' + r_dead2);
-        console.log('r_justFed :' + r_justFed);
+        console.log('r_justFed :' + r_justFed1);
+        console.log('r_justFed :' + r_justFed2);
 
         // 3. Mamdani Aggregation + Centroid Defuzzification
         let num = 0, den = 0;
@@ -250,7 +277,8 @@ export class FuzzyLogic {
             const mu_fallAfterPeak = Math.min(r_fallAfterPeak, this.mfFeedAgain(x)); // treat collapse as feed-again
             const mu_dead1 = Math.min(r_dead1, this.mfDead(x));
             const mu_dead2 = Math.min(r_dead2, this.mfDead(x));
-            const mu_justFed = Math.min(r_justFed, this.mfNotReady(x));
+            const mu_justFed1 = Math.min(r_justFed1, this.mfFeedAgain(x));
+            const mu_justFed2 = Math.min(r_justFed2, this.mfFeedAgain(x));
 
             // aggregate (max of all clipped mfs)
             const mu = Math.max(
@@ -263,7 +291,8 @@ export class FuzzyLogic {
                 mu_fallAfterPeak,
                 mu_dead1,
                 mu_dead2,
-                mu_justFed
+                mu_justFed1,
+                mu_justFed2
             );
 
             num += x * mu;

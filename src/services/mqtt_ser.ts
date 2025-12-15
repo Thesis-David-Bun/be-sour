@@ -92,7 +92,7 @@ mqttClient.on("message", (topic, msg) => {
 function printJSON(x: any) {
     console.log('{');
     Object.keys(x).forEach(key => {
-        console.log(key + " : " + x[key]);
+        console.log('\t' + key + " : " + x[key]);
     });
     console.log('}');
 }
