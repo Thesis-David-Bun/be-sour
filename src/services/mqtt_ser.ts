@@ -59,8 +59,8 @@ mqttClient.on("message", (topic, msg) => {
     const message = msg.toString();
 
     let payload = JSON.parse(message);
-    payload.fil_mean_H = (150 - payload.fil_mean_H);
-    payload.raw_mean_H = (150 - payload.raw_mean_H);
+    payload.fil_mean_H = Math.round((150 - payload.fil_mean_H) * 100) / 100;
+    payload.raw_mean_H = Math.round((150 - payload.raw_mean_H) * 100) / 100;
 
     if (resetFlag === "1") {
         FL.reset(payload);
