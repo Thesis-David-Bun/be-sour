@@ -51,14 +51,14 @@ export class FuzzyLogic {
 
     // Height (deltaH)
     private heightLow(H: number) {
-        return this.fallLinear(H, P.H_low_max, P.H_med_min);
+        return this.riseLinear(H, P.H_med_max, P.H_low_max);
     }
     private heightMed(H: number) {
         const mid = (P.H_med_min + P.H_med_max) * 0.5;
         return this.tri(H, P.H_med_min, mid, P.H_med_max);
     }
     private heightHigh(H: number) {
-        return this.riseLinear(H, P.H_high_min, P.H_high_min + 10);
+        return this.fallLinear(H, P.H_high_min, P.H_med_min);
     }
 
     // Ethanol
