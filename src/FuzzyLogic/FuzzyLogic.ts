@@ -112,7 +112,7 @@ export class FuzzyLogic {
     private mfDead(x: number) { return this.riseLinear(x, 0.00, 0.10); } // small left-end region
 
     // ==== PRE / PROCESSING MEMBERSHIP ====
-    public reset() {
+    public reset(x: RawFuzzyInput) {
         Object.keys(Q).forEach(key => {
             Q[key] = Q_def[key];
         });
@@ -120,6 +120,11 @@ export class FuzzyLogic {
         P.last_peak_H = 0;
         P.has_peaked = 0;
         P.is_delta = false;
+
+        P.H_low_max = x.fil_mean_H;
+        P.H_med_min = x.fil_mean_H;
+        P.H_med_max = x.fil_mean_H * 3;
+        P.H_high_min = x.fil_mean_H * 3;
     }
 
     public raw_input_pre_processing(x: RawFuzzyInput) {

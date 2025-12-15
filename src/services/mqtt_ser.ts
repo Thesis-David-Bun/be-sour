@@ -28,15 +28,46 @@ mqttClient.on("connect", () => {
     });
 });
 
+interface payload {
+    fil_mean_H: number;
+    fil_mean_E: number;
+    fil_mean_T: number;
+    raw_mean_H: number;
+    raw_mean_E: number;
+    raw_mean_T: number;
+    status: string;
+    crisp: number;
+    isNotify: boolean;
+}
+
+let currentPayload: payload = {
+    fil_mean_E: 0,
+    fil_mean_H: 0,
+    fil_mean_T: 0,
+    raw_mean_E: 0,
+    raw_mean_H: 0,
+    raw_mean_T: 0,
+    status: '',
+    crisp: 0,
+    isNotify: false,
+};
+
+const defPayload: payload = currentPayload;
+let prevPayload: payload = currentPayload;
+
 mqttClient.on("message", (topic, msg) => {
     const message = msg.toString();
 
     let payload = JSON.parse(message);
+    payload.fil_mean_H = (150 - payload.fil_mean_H);
+    payload.raw_mean_H = (150 - payload.raw_mean_H);
 
     if (resetFlag === "1") {
-        FL.reset();
+        FL.reset(payload);
         resetFlag = "0";
         successCount++;
+        currentPayload = defPayload;
+        prevPayload = defPayload;
     }
 
     FL.raw_input_pre_processing(payload);
@@ -45,6 +76,9 @@ mqttClient.on("message", (topic, msg) => {
     payload.status = s.status;
     payload.crisp = s.crisp;
     payload.isNotify = s.isNotify;
+
+    prevPayload = currentPayload;
+    currentPayload = payload;
 
     PushService.notifyAll({
         title: s.status,
