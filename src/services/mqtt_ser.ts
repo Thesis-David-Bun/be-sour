@@ -86,6 +86,7 @@ mqttClient.on("message", (topic, msg) => {
         timestamp: Date.now()
     });
     console.log(payload);
+    console.log(input_fl);
 });
 
 export function sendResetSignal() {
