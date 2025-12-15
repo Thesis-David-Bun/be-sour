@@ -209,8 +209,8 @@ export class FuzzyLogic {
 
         // B. FEED / NOT READY family
         const r_feedFromMed = Math.min(H_med, Math.max(E_med, E_high), RR_rise); // medium rise + ethanol -> feed suggested
-        const r_notReadyEarly = Math.min(H_med, E_low, RR_rise); // early-stage rising but ethanol low -> not ready
-        const r_feedWeak = Math.min(H_high, E_low); // high rise but low ethanol -> weak starter => feed again
+        const r_notReadyEarly = Math.min(H_med, Math.max(E_low, E_med), RR_rise); // early-stage rising but ethanol low -> not ready
+        const r_feedWeak = Math.min(H_high, Math.max(E_low, E_med)); // high rise but low ethanol -> weak starter => feed again
 
         // C. FALL / COLLAPSE (after peak)
         const r_fallAfterPeak = Math.min(RR_fall, H_high, PA_yes);
