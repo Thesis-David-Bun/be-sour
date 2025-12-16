@@ -91,9 +91,9 @@ export const P = {
     E_high_min: 3000.0,
 
     // RiseRate thresholds (mm)
-    RR_fall: -0.2,
-    RR_rise: 0.2,
-    RR_dead_margin: 0.0, // small window around 0 considered stagnant
+    RR_fall: -0.4,
+    RR_rise: 0.4,
+    RR_dead_margin: 0.2, // small window around 0 considered stagnant
 
     // StagnationCounter thresholds
     SC_low: 1,    // 0..1 low
