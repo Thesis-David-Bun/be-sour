@@ -70,6 +70,7 @@ export const P = {
     has_peaked: 0,
     is_delta: false,
     is_overflow: 0,
+    is_feeding: false,
 
     // --- Fuzzy thresholds (inputs) ---
     // Temperature (°C)

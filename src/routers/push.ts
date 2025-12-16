@@ -55,13 +55,13 @@ let arr_payload: any = [
     },
 ];
 
-publishRouter.get("/", (req, res) => {
-    const payload = arr_payload[Number(req.query.i)];
-    FL.raw_input_pre_processing(payload);
-    const input_fl = FL.input_pre_processing(Q);
-    const s = FL.infer(input_fl);
-    payload.status = s.status;
-    payload.crisp = s.crisp;
-    payload.isNotify = s.isNotify;
-    res.json({ 1: payload, 2: input_fl });
-});
+// publishRouter.get("/", (req, res) => {
+//     const payload = arr_payload[Number(req.query.i)];
+//     FL.raw_input_pre_processing(payload);
+//     const input_fl = FL.input_pre_processing(Q);
+//     const s = FL.infer(input_fl);
+//     payload.status = s.status;
+//     payload.crisp = s.crisp;
+//     payload.isNotify = s.isNotify;
+//     res.json({ 1: payload, 2: input_fl });
+// });

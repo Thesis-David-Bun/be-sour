@@ -121,8 +121,9 @@ export class FuzzyLogic {
         P.last_peak_H = 0;
         P.has_peaked = 0;
         P.is_delta = false;
+        P.is_feeding = true;
 
-        const deltaH = P.bottonJarValue - x.fil_mean_H;
+        const deltaH = P.bottonJarValue - Math.round(x.fil_mean_H);
         P.H_low_max = deltaH;
         P.H_med_min = deltaH;
         P.H_med_max = deltaH * 3;
@@ -163,7 +164,7 @@ export class FuzzyLogic {
             P.last_peak_H = deltaH;
         }
 
-        if ((rise < P.fallEpsilon) && (P.last_peak_H > 0) && !P.has_peaked) {
+        if ((rise < P.fallEpsilon) && (P.last_peak_H > 0) && !P.has_peaked && P.is_feeding) {
             P.has_peaked = 1;
         }
 
@@ -319,12 +320,13 @@ export class FuzzyLogic {
         else if (r_ready > 0.6) status = 'READY';
         else if (r_readyOpt > 0.6) status = 'READY_OPTIONAL';
         else if (r_postPeak > 0.3) status = 'POST_PEAK';
-        else if (r_fallAfterPeak > 0.3) status = 'FEED_AGAIN';
+        else if (r_fallAfterPeak > 0.3 || r_feedWeak > 0.4) status = 'FEED_AGAIN';
         else if (r_dead1 > 0.5 || r_dead2 > 0.5) status = 'DEAD';
 
         let isNotify = false;
         if (status === 'READY' || status === 'READY_OPTIONAL' || status === 'READY_URGENT') {
             isNotify = true;
+            P.is_feeding = false;
         }
         return { crisp, status, isNotify };
     }
