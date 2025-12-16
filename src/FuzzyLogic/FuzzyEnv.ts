@@ -80,10 +80,10 @@ export const P = {
     T_high_min: 33.0,
 
     // Delta height (mm)
-    H_low_max: 3.0,
-    H_med_min: 3.0,
-    H_med_max: 9.0,
-    H_high_min: 9.0,
+    H_low_max: 7.0,
+    H_med_min: 7.0,
+    H_med_max: 14.0,
+    H_high_min: 14.0,
 
     // Ethanol (assume scaled 0..4095 OR ppm), thresholds chosen as raw ADC-ish
     E_low_max: 2000.0,

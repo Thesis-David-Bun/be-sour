@@ -230,9 +230,9 @@ export class FuzzyLogic {
 
         // 2) rule activations (Mamdani antecedents)
         // A. READY family
-        const r_readyUrg = Math.min(T_hot, H_high, E_high, Math.max(RR_rise, PA_yes));      // urgent
-        const r_ready = Math.min(T_warm, H_high, E_high, Math.max(RR_rise, PA_yes));     // normal ready
-        const r_readyOpt = Math.min(T_cold, H_high, E_high, Math.max(RR_rise, PA_yes));     // usable but optional
+        const r_readyUrg = Math.min(T_hot, H_high, E_high, Math.min(RR_rise, PA_yes));      // urgent
+        const r_ready = Math.min(T_warm, H_high, E_high, Math.min(RR_rise, PA_yes));     // normal ready
+        const r_readyOpt = Math.min(T_cold, H_high, E_high, Math.min(RR_rise, PA_yes));     // usable but optional
 
         // B. FEED / NOT READY family
         const r_feedFromMed = Math.min(H_med, Math.max(E_med, E_high), RR_rise); // medium rise + ethanol -> feed suggested
