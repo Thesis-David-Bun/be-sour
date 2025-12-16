@@ -320,7 +320,7 @@ export class FuzzyLogic {
         else if (r_ready > 0.6) status = 'READY';
         else if (r_readyOpt > 0.6) status = 'READY_OPTIONAL';
         else if (r_postPeak > 0.3) status = 'POST_PEAK';
-        else if (r_fallAfterPeak > 0.1 || r_feedWeak > 0.1) status = 'FEED_AGAIN';
+        else if (r_fallAfterPeak > 0.1 || r_feedWeak > 0.1 || r_feedFromMed > 0.1) status = 'FEED_AGAIN';
         else if (r_dead1 > 0.1 || r_dead2 > 0.1) status = 'DEAD';
 
         let isNotify = false;
