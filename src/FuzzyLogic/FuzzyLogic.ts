@@ -76,7 +76,7 @@ export class FuzzyLogic {
     // Rise Rate: Falling / Stagnant / Rising
     private rrFalling(RR: number) {
         // strong falling below P_RR_fall-1
-        return this.fallLinear(RR, P.RR_fall - 2, P.RR_fall);
+        return this.fallLinear(RR, P.RR_fall - 5, P.RR_fall);
     }
     private rrStagnant(RR: number) {
         // trapezoid around [-P_RR_dead_margin..+P_RR_dead_margin]
@@ -101,14 +101,15 @@ export class FuzzyLogic {
 
     // Peak Achieved (0..1) -> binaryish fuzzy
     private paNo(pa: number) { return (1 - pa); }
-    private paYes(pa: number) { return pa; }
+    private paYes(pa: number) { return pa * 0.7; }
 
     // ===== OUTPUT MEMBERSHIP =====
-    private mfFeedAgain(x: number) { return this.riseLinear(x, 0.00, 0.20); }
+    private mfFeedAgain(x: number) { return this.riseLinear(x, 0.00, 0.10); }
     private mfNotReady(x: number) { return this.riseLinear(x, 0.20, 0.40); }
     private mfReadyOptional(x: number) { return this.riseLinear(x, 0.40, 0.60); }
     private mfReady(x: number) { return this.riseLinear(x, 0.60, 0.80); }
     private mfReadyUrgent(x: number) { return this.riseLinear(x, 0.80, 1.00); }
+    private mfPostPeak(x: number) { return this.tri(x, 0.35, 0.45, 0.55); }
     private mfDead(x: number) { return this.riseLinear(x, 0.00, 0.10); } // small left-end region
 
     // ==== PRE / PROCESSING MEMBERSHIP ====
@@ -149,8 +150,8 @@ export class FuzzyLogic {
     }
 
     public input_pre_processing(x: RawFuzzyInput): FuzzyInput {
-        const deltaH = P.bottonJarValue - x.fil_mean_H;
-        const prev_deltaH = P.bottonJarValue - x.prev_fil_mean_H;
+        const deltaH = Math.round((P.bottonJarValue - x.fil_mean_H) * 100) / 100;
+        const prev_deltaH = x.prev_fil_mean_H !== 0 ? Math.round((P.bottonJarValue - x.prev_fil_mean_H) * 100) / 100 : 0;
         if (Math.abs(deltaH - prev_deltaH) <= P.minMeaningfulDelta) {
             P.stagnationCounter += 1;
         } else {
@@ -228,9 +229,9 @@ export class FuzzyLogic {
 
         // 2) rule activations (Mamdani antecedents)
         // A. READY family
-        const r_readyUrg = Math.min(T_hot, H_high, E_high, RR_rise);      // urgent
-        const r_ready = Math.min(T_warm, H_high, E_high, RR_rise);     // normal ready
-        const r_readyOpt = Math.min(T_cold, H_high, E_high, RR_rise);     // usable but optional
+        const r_readyUrg = Math.min(T_hot, H_high, E_high, Math.max(RR_rise, PA_yes));      // urgent
+        const r_ready = Math.min(T_warm, H_high, E_high, Math.max(RR_rise, PA_yes));     // normal ready
+        const r_readyOpt = Math.min(T_cold, H_high, E_high, Math.max(RR_rise, PA_yes));     // usable but optional
 
         // B. FEED / NOT READY family
         const r_feedFromMed = Math.min(H_med, Math.max(E_med, E_high), RR_rise); // medium rise + ethanol -> feed suggested
@@ -238,15 +239,16 @@ export class FuzzyLogic {
         const r_feedWeak = Math.min(H_high, Math.max(E_low, E_med)); // high rise but low ethanol -> weak starter => feed again
 
         // C. FALL / COLLAPSE (after peak)
-        const r_fallAfterPeak = Math.min(RR_fall, H_high, PA_yes);
+        const r_fallAfterPeak = Math.min(RR_fall, Math.max(H_high, H_med, H_low), PA_yes);
+        const r_postPeak = Math.min(RR_fall, PA_yes, Math.max(H_med, H_high), Math.max(E_med, E_high));
 
         // D. STAGNATION & DEAD
-        const r_dead1 = Math.min(RR_stag, E_high, SC_high); // stagnant + high ethanol + many stagnant -> dead
-        const r_dead2 = Math.min(RR_stag, H_med, E_high, PA_no); // stagnant mid-rise, high ethanol, never peaked -> likely dead
+        const r_dead1 = Math.min(Math.max(RR_stag, RR_fall), E_high, SC_high); // stagnant + high ethanol + many stagnant -> dead
+        const r_dead2 = Math.min(Math.max(RR_stag, RR_fall), E_high, PA_no, Math.max(SC_med, SC_high)); // stagnant mid-rise, high ethanol, never peaked -> likely dead
 
         // E. JUST-FED / NOT_READY
         const r_justFed1 = Math.min(H_low, Math.max(E_low, E_med), RR_stag, SC_low);
-        const r_justFed2 = Math.min(H_low, Math.max(E_low, E_med));
+        const r_justFed2 = Math.min(H_low, Math.max(E_low, E_med), SC_low, RR_rise);
 
         console.log('r_ready :' + r_ready);
         console.log('r_readyUrg :' + r_readyUrg);
@@ -255,6 +257,7 @@ export class FuzzyLogic {
         console.log('r_notReadyEarly :' + r_notReadyEarly);
         console.log('r_feedWeak :' + r_feedWeak);
         console.log('r_fallAfterPeak :' + r_fallAfterPeak);
+        console.log('r_postPeak :' + r_postPeak);
         console.log('r_dead1 :' + r_dead1);
         console.log('r_dead2 :' + r_dead2);
         console.log('r_justFed :' + r_justFed1);
@@ -274,6 +277,7 @@ export class FuzzyLogic {
             const mu_notReadyEarly = Math.min(r_notReadyEarly, this.mfNotReady(x));
             const mu_feedWeak = Math.min(r_feedWeak, this.mfFeedAgain(x));
 
+            const mu_postPeak = Math.min(r_postPeak, this.mfPostPeak(x));
             const mu_fallAfterPeak = Math.min(r_fallAfterPeak, this.mfFeedAgain(x)); // treat collapse as feed-again
             const mu_dead1 = Math.min(r_dead1, this.mfDead(x));
             const mu_dead2 = Math.min(r_dead2, this.mfDead(x));
@@ -292,7 +296,8 @@ export class FuzzyLogic {
                 mu_dead1,
                 mu_dead2,
                 mu_justFed1,
-                mu_justFed2
+                mu_justFed2,
+                mu_postPeak
             );
 
             num += x * mu;
@@ -310,7 +315,17 @@ export class FuzzyLogic {
         else if (crisp >= MAP.FEED) status = "FEED_AGAIN";
         else status = "DEAD";
 
-        const isNotify = P.has_peaked === 1 ? true : false;
+        if (r_readyUrg > 0.6) status = 'READY_URGENT';
+        else if (r_ready > 0.6) status = 'READY';
+        else if (r_readyOpt > 0.6) status = 'READY_OPTIONAL';
+        else if (r_postPeak > 0.3) status = 'POST_PEAK';
+        else if (r_fallAfterPeak > 0.3) status = 'FEED_AGAIN';
+        else if (r_dead1 > 0.5 || r_dead2 > 0.5) status = 'DEAD';
+
+        let isNotify = false;
+        if (status === 'READY' || status === 'READY_OPTIONAL' || status === 'READY_URGENT') {
+            isNotify = true;
+        }
         return { crisp, status, isNotify };
     }
 }

@@ -4,7 +4,17 @@ export type FuzzyState =
     | "READY_OPTIONAL"
     | "READY"
     | "READY_URGENT"
-    | "DEAD";
+    | "DEAD"
+    | "WEAK"
+    | "POST_PEAK";
+
+export const MAP = {
+    URGENT: 0.85,
+    READY: 0.70,
+    OPTIONAL: 0.55,
+    NOTREADY: 0.30,
+    FEED: 0.15,
+};
 
 export interface FuzzyInput {
     tempC: number;            // °C
@@ -81,9 +91,9 @@ export const P = {
     E_high_min: 3000.0,
 
     // RiseRate thresholds (mm)
-    RR_fall: -0.5,
-    RR_rise: 0.5,
-    RR_dead_margin: 0.2, // small window around 0 considered stagnant
+    RR_fall: -0.2,
+    RR_rise: 0.2,
+    RR_dead_margin: 0.0, // small window around 0 considered stagnant
 
     // StagnationCounter thresholds
     SC_low: 1,    // 0..1 low
@@ -104,14 +114,6 @@ export const P = {
     bottonJarValue: 203,
     topJarValue: 109,
 }
-
-export const MAP = {
-    URGENT: 0.85,
-    READY: 0.70,
-    OPTIONAL: 0.55,
-    NOTREADY: 0.30,
-    FEED: 0.15,
-};
 
 export const INFER_IO = {
     T_cold: 0,
