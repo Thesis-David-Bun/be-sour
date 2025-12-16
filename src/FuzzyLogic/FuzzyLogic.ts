@@ -76,7 +76,7 @@ export class FuzzyLogic {
     // Rise Rate: Falling / Stagnant / Rising
     private rrFalling(RR: number) {
         // strong falling below P_RR_fall-1
-        return this.fallLinear(RR, P.RR_fall - 5, P.RR_fall);
+        return this.fallLinear(RR, P.RR_fall - 1, P.RR_fall);
     }
     private rrStagnant(RR: number) {
         // trapezoid around [-P_RR_dead_margin..+P_RR_dead_margin]
@@ -85,7 +85,7 @@ export class FuzzyLogic {
         return this.trapezoid(RR, a, -P.RR_dead_margin, P.RR_dead_margin, d);
     }
     private rrRising(RR: number) {
-        return this.riseLinear(RR, P.RR_rise, P.RR_rise + 5);
+        return this.riseLinear(RR, P.RR_rise, P.RR_rise + 1);
     }
 
     // Stagnation Counter fuzzy
@@ -230,12 +230,12 @@ export class FuzzyLogic {
 
         // 2) rule activations (Mamdani antecedents)
         // A. READY family
-        const r_readyUrg = Math.min(T_hot, H_high, E_high, Math.min(RR_rise, PA_yes));      // urgent
-        const r_ready = Math.min(T_warm, H_high, E_high, Math.min(RR_rise, PA_yes));     // normal ready
-        const r_readyOpt = Math.min(T_cold, H_high, E_high, Math.min(RR_rise, PA_yes));     // usable but optional
+        const r_readyUrg = Math.min(T_hot, H_high, E_high, Math.max(RR_rise, PA_yes));      // urgent
+        const r_ready = Math.min(T_warm, H_high, E_high, Math.max(RR_rise, PA_yes));     // normal ready
+        const r_readyOpt = Math.min(T_cold, H_high, E_high, Math.max(RR_rise, PA_yes));     // usable but optional
 
         // B. FEED / NOT READY family
-        const r_feedFromMed = Math.min(H_med, Math.max(E_med, E_high), RR_rise); // medium rise + ethanol -> feed suggested
+        const r_feedFromMed = Math.min(H_med, Math.max(E_med, E_high), Math.max(RR_rise, RR_fall)); // medium rise + ethanol -> feed suggested
         const r_notReadyEarly = Math.min(H_med, Math.max(E_low, E_med), RR_rise); // early-stage rising but ethanol low -> not ready
         const r_feedWeak = Math.min(H_high, Math.max(E_low, E_med)); // high rise but low ethanol -> weak starter => feed again
 
@@ -314,14 +314,14 @@ export class FuzzyLogic {
         else if (crisp >= MAP.OPTIONAL) status = "READY_OPTIONAL";
         else if (crisp >= MAP.NOTREADY) status = "NOT_READY";
         else if (crisp >= MAP.FEED) status = "FEED_AGAIN";
-        else status = "DEAD";
+        else status = "STAGNANT";
 
         if (r_readyUrg > 0.6) status = 'READY_URGENT';
         else if (r_ready > 0.6) status = 'READY';
         else if (r_readyOpt > 0.6) status = 'READY_OPTIONAL';
         else if (r_postPeak > 0.3) status = 'POST_PEAK';
         else if (r_fallAfterPeak > 0.1 || r_feedWeak > 0.1 || r_feedFromMed > 0.1) status = 'FEED_AGAIN';
-        else if (r_dead1 > 0.1 || r_dead2 > 0.1) status = 'DEAD';
+        else if (r_dead1 > 0.1 || r_dead2 > 0.1) status = 'STAGNANT';
 
         let isNotify = false;
         if (status === 'READY' || status === 'READY_OPTIONAL' || status === 'READY_URGENT') {

@@ -4,7 +4,7 @@ export type FuzzyState =
     | "READY_OPTIONAL"
     | "READY"
     | "READY_URGENT"
-    | "DEAD"
+    | "STAGNANT"
     | "WEAK"
     | "POST_PEAK";
 
