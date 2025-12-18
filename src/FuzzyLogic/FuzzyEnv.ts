@@ -92,9 +92,9 @@ export const P = {
     E_high_min: 3000.0,
 
     // RiseRate thresholds (mm)
-    RR_fall: -0.4,
-    RR_rise: 0.4,
-    RR_dead_margin: 0.2, // small window around 0 considered stagnant
+    RR_fall: -0.3,
+    RR_rise: 0.3,
+    RR_dead_margin: 0.1, // small window around 0 considered stagnant
 
     // StagnationCounter thresholds
     SC_low: 1,    // 0..1 low
@@ -106,10 +106,10 @@ export const P = {
     ethanolSaturateNeeded: 3, // count threshold
 
     // For rise/fall detection (compare last delta to current)
-    riseEpsilon: 0.5,  // mm difference to consider change
-    fallEpsilon: -0.5,
+    riseEpsilon: 0.2,  // mm difference to consider change
+    fallEpsilon: -0.2,
     // Small meaningful rise
-    minMeaningfulDelta: 0.2,  // mm
+    minMeaningfulDelta: 0.1,  // mm
 
     // baseline
     bottonJarValue: 203,

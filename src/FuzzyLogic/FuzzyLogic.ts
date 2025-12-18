@@ -124,10 +124,12 @@ export class FuzzyLogic {
         P.is_feeding = true;
 
         const deltaH = P.bottonJarValue - Math.round(x.fil_mean_H);
-        P.H_low_max = deltaH;
-        P.H_med_min = deltaH;
+        P.H_low_max = deltaH - 1;
+        P.H_med_min = deltaH - 1;
         P.H_med_max = deltaH * 3;
         P.H_high_min = deltaH * 3;
+        console.log(P.H_low_max);
+        console.log(P.H_high_min);
     }
 
     public raw_input_pre_processing(x: RawFuzzyInput) {
@@ -164,8 +166,12 @@ export class FuzzyLogic {
             P.last_peak_H = deltaH;
         }
 
-        if ((rise < P.fallEpsilon) && (P.last_peak_H > 0) && !P.has_peaked && P.is_feeding) {
+        if ((rise < P.fallEpsilon) && (P.last_peak_H > 0) && !Math.round(P.has_peaked)) {
             P.has_peaked = 1;
+        }
+
+        if ((deltaH - P.last_peak_H) < 2 && Math.round(P.has_peaked)) {
+            P.has_peaked = P.has_peaked - 0.3 < 0 ? 0 : (P.has_peaked - 0.3);
         }
 
         if (deltaH >= P.overflowHeightThreshold) {
@@ -177,7 +183,7 @@ export class FuzzyLogic {
             deltaH: deltaH,
             ethanol: x.fil_mean_E,
             peakAchieved: P.has_peaked,
-            riseRate: deltaH - prev_deltaH,
+            riseRate: Math.round((deltaH - prev_deltaH) * 100) / 100,
             stagnationCounter: P.stagnationCounter,
             overFlow: P.is_overflow
         };
@@ -236,7 +242,7 @@ export class FuzzyLogic {
 
         // B. FEED / NOT READY family
         const r_feedFromMed = Math.min(H_med, Math.max(E_med, E_high), Math.max(RR_rise, RR_fall)); // medium rise + ethanol -> feed suggested
-        const r_notReadyEarly = Math.min(H_med, Math.max(E_low, E_med), RR_rise); // early-stage rising but ethanol low -> not ready
+        const r_notReadyEarly = Math.min(H_med, Math.max(E_low, E_med, E_high), RR_rise); // early-stage rising but ethanol low -> not ready
         const r_feedWeak = Math.min(H_high, Math.max(E_low, E_med)); // high rise but low ethanol -> weak starter => feed again
 
         // C. FALL / COLLAPSE (after peak)
@@ -320,6 +326,7 @@ export class FuzzyLogic {
         else if (r_ready > 0.6) status = 'READY';
         else if (r_readyOpt > 0.6) status = 'READY_OPTIONAL';
         else if (r_postPeak > 0.3) status = 'POST_PEAK';
+        else if (r_notReadyEarly > 0.2) status = 'NOT_READY';
         else if (r_fallAfterPeak > 0.1 || r_feedWeak > 0.1 || r_feedFromMed > 0.1) status = 'FEED_AGAIN';
         else if (r_dead1 > 0.1 || r_dead2 > 0.1) status = 'STAGNANT';
 
