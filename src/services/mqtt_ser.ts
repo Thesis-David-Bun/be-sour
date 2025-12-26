@@ -45,8 +45,16 @@ const url = `mqtts://${ENV.MQTT_HOST}:${ENV.MQTT_PORT}`;
 
 const FL = new FuzzyLogic();
 
-const EXTRA_PAYLOAD_PATH = "./log/extra_payload.json";
-const COPY_OF_PAYLOAD_PATH = "./log/copy_of_extra.json";
+const now = new Date();
+const formattedDate = now.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Jakarta'
+}).replaceAll('/', '-');
+
+const EXTRA_PAYLOAD_PATH = "./log/" + formattedDate + "_extra_payload.json";
+const COPY_OF_PAYLOAD_PATH = "./log/" + formattedDate + "_copy_of_extra.json";
 function appendPayloadToJsonFile(filePath: string, newPayload: any) {
     try {
         const absolutePath = path.resolve(filePath);
@@ -155,15 +163,15 @@ export const mqttClient = mqtt.connect(url, {
 });
 
 mqttClient.on("connect", () => {
-    // resetFlag = "1";
+    resetFlag = "1";
     console.log("MQTT Connected");
 
     mqttClient.subscribe(MQTT_TOPICS.SENSOR, err => {
         if (err) console.error("MQTT subscription error:", err);
     });
 
-    // moveAndResetJsonArray(EXTRA_PAYLOAD_PATH, COPY_OF_PAYLOAD_PATH);
-    // rerun_infer(COPY_OF_PAYLOAD_PATH);
+    moveAndResetJsonArray(EXTRA_PAYLOAD_PATH, COPY_OF_PAYLOAD_PATH);
+    rerun_infer(COPY_OF_PAYLOAD_PATH);
 });
 
 mqttClient.on("message", (topic, msg) => {
@@ -197,10 +205,10 @@ mqttClient.on("message", (topic, msg) => {
     printJSON(payload);
     printJSON(input_fl);
 
-    // appendPayloadToJsonFile(EXTRA_PAYLOAD_PATH, payload);
+    appendPayloadToJsonFile(EXTRA_PAYLOAD_PATH, payload);
 });
 
-function printJSON(x: any) {
+export function printJSON(x: any) {
     console.log('{');
     Object.keys(x).forEach(key => {
         console.log('  ' + key + " : " + x[key]);
