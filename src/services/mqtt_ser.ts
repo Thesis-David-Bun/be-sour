@@ -7,6 +7,7 @@ import { MQTT_TOPICS } from "../config/env.js";
 import { PushService } from "./web_push.js";
 import { FuzzyLogic } from "../FuzzyLogic/FuzzyLogic.js";
 import { Q } from "../FuzzyLogic/FuzzyEnv.js";
+import { MQ3Processor } from "../FuzzyLogic/MQ3_calib.js";
 
 interface payload {
     fil_mean_H: number;
@@ -19,6 +20,7 @@ interface payload {
     crisp: number;
     isNotify: boolean;
     timestamp: number;
+    rasio_rs_ro: number;
 }
 
 let currentPayload: payload = {
@@ -32,6 +34,7 @@ let currentPayload: payload = {
     crisp: 0,
     isNotify: false,
     timestamp: 0,
+    rasio_rs_ro: 0,
 };
 
 const defPayload: payload = currentPayload;
@@ -44,6 +47,7 @@ const clientId = "Sourdough-" + Math.random().toString(16).slice(2);
 const url = `mqtts://${ENV.MQTT_HOST}:${ENV.MQTT_PORT}`;
 
 const FL = new FuzzyLogic();
+const ro = MQ3Processor.calculateRo(1203);
 
 const now = new Date();
 const formattedDate = now.toLocaleDateString('en-GB', {
@@ -115,6 +119,7 @@ function rerun_infer(filePath: string) {
             payload.crisp = s.crisp;
             payload.isNotify = s.isNotify;
             payload.timestamp = Date.now();
+            payload.rasio_rs_ro = MQ3Processor.getRatio(payload.fil_mean_E, ro);
             prevPayload = currentPayload;
             currentPayload = payload;
             appendPayloadToJsonFile(EXTRA_PAYLOAD_PATH, payload);
@@ -193,6 +198,7 @@ mqttClient.on("message", (topic, msg) => {
     payload.crisp = s.crisp;
     payload.isNotify = s.isNotify;
     payload.timestamp = Date.now();
+    payload.rasio_rs_ro = MQ3Processor.getRatio(payload.fil_mean_E, ro);
 
     prevPayload = currentPayload;
     currentPayload = payload;
