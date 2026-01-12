@@ -8,6 +8,23 @@ export const publishRouter = Router();
 
 publishRouter.post("/reset", (_, res) => {
     sendResetSignal();
+    PushService.notifyAll({
+        title: "Starter's ready",
+        body: JSON.stringify({
+            "raw_mean_E": 3583,
+            "fil_mean_E": 3577.27,
+            "raw_mean_T": 32.31,
+            "fil_mean_T": 32.31,
+            "raw_mean_H": 118,
+            "fil_mean_H": 118,
+            "status": "Starter's Ready",
+            "crisp": 0.925,
+            "isNotify": true,
+            "timestamp": 1767878602962,
+            "rasio_rs_ro": 1.9277768177756662
+        }),
+        timestamp: Date.now()
+    });
     res.json({ reset: true });
 });
 
@@ -30,8 +47,8 @@ let currentPayload = {
 
 publishRouter.post("/test", (_, res) => {
     PushService.notifyAll({
-        title: 'TEST',
-        body: JSON.stringify(currentPayload),
+        title: 'Starter\'s ready',
+        body: JSON.stringify({ isNotify: true }),
         timestamp: Date.now()
     });
     res.json({ test: true });

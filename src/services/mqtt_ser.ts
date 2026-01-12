@@ -47,7 +47,7 @@ const clientId = "Sourdough-" + Math.random().toString(16).slice(2);
 const url = `mqtts://${ENV.MQTT_HOST}:${ENV.MQTT_PORT}`;
 
 const FL = new FuzzyLogic();
-const ro = MQ3Processor.calculateRo(1203);
+const ro = MQ3Processor.calculateRo(261);
 
 const now = new Date();
 const formattedDate = now.toLocaleDateString('en-GB', {
@@ -58,7 +58,9 @@ const formattedDate = now.toLocaleDateString('en-GB', {
 }).replaceAll('/', '-');
 
 const EXTRA_PAYLOAD_PATH = "./log/" + formattedDate + "_extra_payload.json";
+// const EXTRA_PAYLOAD_PATH = "./test/success.json";
 const COPY_OF_PAYLOAD_PATH = "./log/" + formattedDate + "_copy_of_extra.json";
+// const COPY_OF_PAYLOAD_PATH = "./test/csuccess.json";
 function appendPayloadToJsonFile(filePath: string, newPayload: any) {
     try {
         const absolutePath = path.resolve(filePath);
@@ -102,7 +104,7 @@ function rerun_infer(filePath: string) {
             }
         }
 
-        data.forEach((e: payload) => {
+        data.forEach((e: payload, i) => {
             payload = e;
             if (resetFlag === "1") {
                 FL.reset(payload);
@@ -114,14 +116,30 @@ function rerun_infer(filePath: string) {
 
             FL.raw_input_pre_processing(payload);
             const input_fl = FL.input_pre_processing(Q);
-            const s = FL.infer(input_fl);
+            const n = 26;
+            const s = FL.infer(input_fl, i === (n - 1));
             payload.status = s.status;
             payload.crisp = s.crisp;
             payload.isNotify = s.isNotify;
             payload.timestamp = Date.now();
-            payload.rasio_rs_ro = MQ3Processor.getRatio(payload.fil_mean_E, ro);
-            prevPayload = currentPayload;
-            currentPayload = payload;
+            payload.rasio_rs_ro = MQ3Processor.getRatio(payload.raw_mean_E, ro);
+
+            if (prevPayload.timestamp === 0) {
+                console.log('sekali');
+                prevPayload = currentPayload;
+                currentPayload = payload;
+            } else if (s.isNotify) {
+                prevPayload = currentPayload;
+                currentPayload = payload;
+
+                PushService.notifyAll({
+                    title: s.status,
+                    body: JSON.stringify(payload),
+                    timestamp: Date.now()
+                });
+            }
+            // printJSON(payload);
+            // printJSON(input_fl);
             appendPayloadToJsonFile(EXTRA_PAYLOAD_PATH, payload);
         });
     } catch (err) {
@@ -193,23 +211,29 @@ mqttClient.on("message", (topic, msg) => {
 
     FL.raw_input_pre_processing(payload);
     const input_fl = FL.input_pre_processing(Q);
-    const s = FL.infer(input_fl);
+    const s = FL.infer(input_fl, false);
     payload.status = s.status;
     payload.crisp = s.crisp;
     payload.isNotify = s.isNotify;
     payload.timestamp = Date.now();
-    payload.rasio_rs_ro = MQ3Processor.getRatio(payload.fil_mean_E, ro);
+    payload.rasio_rs_ro = MQ3Processor.getRatio(payload.raw_mean_E, ro);
 
-    prevPayload = currentPayload;
-    currentPayload = payload;
+    if (prevPayload.timestamp === 0) {
+        console.log('sekali');
+        prevPayload = currentPayload;
+        currentPayload = payload;
+    } else {
+        prevPayload = currentPayload;
+        currentPayload = payload;
 
-    PushService.notifyAll({
-        title: s.status,
-        body: JSON.stringify(payload),
-        timestamp: Date.now()
-    });
-    printJSON(payload);
-    printJSON(input_fl);
+        PushService.notifyAll({
+            title: s.status,
+            body: JSON.stringify(payload),
+            timestamp: Date.now()
+        });
+    }
+    // printJSON(payload);
+    // printJSON(input_fl);
 
     appendPayloadToJsonFile(EXTRA_PAYLOAD_PATH, payload);
 });

@@ -1,0 +1,492 @@
+[
+    {
+        "raw_mean_E": 2208.86,
+        "raw_mean_T": 28.55,
+        "raw_mean_H": 184,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837698,
+        "rasio_rs_ro": 4.7661671750346155
+    },
+    {
+        "raw_mean_E": 2253.51,
+        "raw_mean_T": 28.98,
+        "raw_mean_H": 184,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837701,
+        "rasio_rs_ro": 4.619528029001779
+    },
+    {
+        "raw_mean_E": 2280.54,
+        "raw_mean_T": 29.38,
+        "raw_mean_H": 183,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837704,
+        "rasio_rs_ro": 4.533546532063461
+    },
+    {
+        "raw_mean_E": 2431.35,
+        "raw_mean_T": 29.52,
+        "raw_mean_H": 183,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837706,
+        "rasio_rs_ro": 4.0889141338523824
+    },
+    {
+        "raw_mean_E": 2471.33,
+        "raw_mean_T": 30.12,
+        "raw_mean_H": 183,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837709,
+        "rasio_rs_ro": 3.980141233928481
+    },
+    {
+        "raw_mean_E": 2489.01,
+        "raw_mean_T": 30.15,
+        "raw_mean_H": 182,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837712,
+        "rasio_rs_ro": 3.933153876833695
+    },
+    {
+        "raw_mean_E": 2569.58,
+        "raw_mean_T": 30.56,
+        "raw_mean_H": 182,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837714,
+        "rasio_rs_ro": 3.727213871948009
+    },
+    {
+        "raw_mean_E": 2672.61,
+        "raw_mean_T": 30.9,
+        "raw_mean_H": 181,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837716,
+        "rasio_rs_ro": 3.481956479094794
+    },
+    {
+        "raw_mean_E": 2731.48,
+        "raw_mean_T": 30.86,
+        "raw_mean_H": 180,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837718,
+        "rasio_rs_ro": 3.350125778015577
+    },
+    {
+        "raw_mean_E": 2838.15,
+        "raw_mean_T": 31.13,
+        "raw_mean_H": 179,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837721,
+        "rasio_rs_ro": 3.125186619964164
+    },
+    {
+        "raw_mean_E": 2913.89,
+        "raw_mean_T": 31.44,
+        "raw_mean_H": 178,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837723,
+        "rasio_rs_ro": 2.9754689902588405
+    },
+    {
+        "raw_mean_E": 3041.46,
+        "raw_mean_T": 31.52,
+        "raw_mean_H": 178,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837724,
+        "rasio_rs_ro": 2.7401540870814864
+    },
+    {
+        "raw_mean_E": 3143.79,
+        "raw_mean_T": 31.76,
+        "raw_mean_H": 178,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837726,
+        "rasio_rs_ro": 2.565200248076299
+    },
+    {
+        "raw_mean_E": 3225.51,
+        "raw_mean_T": 31.66,
+        "raw_mean_H": 176,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837728,
+        "rasio_rs_ro": 2.43345572277438
+    },
+    {
+        "raw_mean_E": 3297.89,
+        "raw_mean_T": 31.89,
+        "raw_mean_H": 176,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837729,
+        "rasio_rs_ro": 2.3222210554807705
+    },
+    {
+        "raw_mean_E": 3336.4,
+        "raw_mean_T": 32.04,
+        "raw_mean_H": 175,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837731,
+        "rasio_rs_ro": 2.2650053338071636
+    },
+    {
+        "raw_mean_E": 3385,
+        "raw_mean_T": 32.16,
+        "raw_mean_H": 173,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837733,
+        "rasio_rs_ro": 2.1946567071494036
+    },
+    {
+        "raw_mean_E": 3379.52,
+        "raw_mean_T": 32.07,
+        "raw_mean_H": 172,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837735,
+        "rasio_rs_ro": 2.202487811379899
+    },
+    {
+        "raw_mean_E": 3447.35,
+        "raw_mean_T": 32.28,
+        "raw_mean_H": 171,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837737,
+        "rasio_rs_ro": 2.107309595951434
+    },
+    {
+        "raw_mean_E": 3487.02,
+        "raw_mean_T": 32.43,
+        "raw_mean_H": 171,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837739,
+        "rasio_rs_ro": 2.0533612015738125
+    },
+    {
+        "raw_mean_E": 3488.94,
+        "raw_mean_T": 32.49,
+        "raw_mean_H": 170,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837740,
+        "rasio_rs_ro": 2.05078126262277
+    },
+    {
+        "raw_mean_E": 3532.02,
+        "raw_mean_T": 32.56,
+        "raw_mean_H": 168,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837741,
+        "rasio_rs_ro": 1.9936314014798842
+    },
+    {
+        "raw_mean_E": 3579.28,
+        "raw_mean_T": 32.58,
+        "raw_mean_H": 168,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837743,
+        "rasio_rs_ro": 1.9325187637081536
+    },
+    {
+        "raw_mean_E": 3607.31,
+        "raw_mean_T": 32.52,
+        "raw_mean_H": 166,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837744,
+        "rasio_rs_ro": 1.8970292459404898
+    },
+    {
+        "raw_mean_E": 3584.33,
+        "raw_mean_T": 32.48,
+        "raw_mean_H": 164,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837746,
+        "rasio_rs_ro": 1.926083833262078
+    },
+    {
+        "raw_mean_E": 3607.65,
+        "raw_mean_T": 32.62,
+        "raw_mean_H": 163,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837748,
+        "rasio_rs_ro": 1.896602148278711
+    },
+    {
+        "raw_mean_E": 3692.44,
+        "raw_mean_T": 32.66,
+        "raw_mean_H": 163,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837749,
+        "rasio_rs_ro": 1.7925471537441218
+    },
+    {
+        "raw_mean_E": 3637.74,
+        "raw_mean_T": 32.67,
+        "raw_mean_H": 162,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837750,
+        "rasio_rs_ro": 1.8591201898461192
+    },
+    {
+        "raw_mean_E": 3620.73,
+        "raw_mean_T": 32.79,
+        "raw_mean_H": 160,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837751,
+        "rasio_rs_ro": 1.8802323493095432
+    },
+    {
+        "raw_mean_E": 3680.18,
+        "raw_mean_T": 32.7,
+        "raw_mean_H": 159,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837752,
+        "rasio_rs_ro": 1.807296205588583
+    },
+    {
+        "raw_mean_E": 3662.87,
+        "raw_mean_T": 32.71,
+        "raw_mean_H": 157,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837754,
+        "rasio_rs_ro": 1.8282886321065426
+    },
+    {
+        "raw_mean_E": 3721.79,
+        "raw_mean_T": 32.72,
+        "raw_mean_H": 157,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837755,
+        "rasio_rs_ro": 1.7576332079120918
+    },
+    {
+        "raw_mean_E": 3725.39,
+        "raw_mean_T": 32.91,
+        "raw_mean_H": 155,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837756,
+        "rasio_rs_ro": 1.7533886249006385
+    },
+    {
+        "raw_mean_E": 3673.78,
+        "raw_mean_T": 32.7,
+        "raw_mean_H": 154,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837758,
+        "rasio_rs_ro": 1.815034654281355
+    },
+    {
+        "raw_mean_E": 3663.46,
+        "raw_mean_T": 32.88,
+        "raw_mean_H": 154,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837759,
+        "rasio_rs_ro": 1.8275698534175921
+    },
+    {
+        "raw_mean_E": 3727.76,
+        "raw_mean_T": 32.76,
+        "raw_mean_H": 152,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837760,
+        "rasio_rs_ro": 1.7505987495646689
+    },
+    {
+        "raw_mean_E": 3698.15,
+        "raw_mean_T": 33,
+        "raw_mean_H": 151,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837762,
+        "rasio_rs_ro": 1.7857112761326217
+    },
+    {
+        "raw_mean_E": 3738.06,
+        "raw_mean_T": 32.8,
+        "raw_mean_H": 151,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837764,
+        "rasio_rs_ro": 1.738515071320817
+    },
+    {
+        "raw_mean_E": 3736.99,
+        "raw_mean_T": 33,
+        "raw_mean_H": 150,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837765,
+        "rasio_rs_ro": 1.7397672655957281
+    },
+    {
+        "raw_mean_E": 3684.46,
+        "raw_mean_T": 32.98,
+        "raw_mean_H": 150,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837766,
+        "rasio_rs_ro": 1.8021361188490694
+    },
+    {
+        "raw_mean_E": 3721.55,
+        "raw_mean_T": 32.85,
+        "raw_mean_H": 149,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837773,
+        "rasio_rs_ro": 1.7579164720915337
+    },
+    {
+        "raw_mean_E": 3706.99,
+        "raw_mean_T": 33,
+        "raw_mean_H": 149,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837774,
+        "rasio_rs_ro": 1.7751697748028823
+    },
+    {
+        "raw_mean_E": 3705.68,
+        "raw_mean_T": 33,
+        "raw_mean_H": 149,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837775,
+        "rasio_rs_ro": 1.7767287460576
+    },
+    {
+        "raw_mean_E": 3693.49,
+        "raw_mean_T": 33,
+        "raw_mean_H": 148,
+        "status": "NOT_READY",
+        "crisp": 0.65,
+        "isNotify": false,
+        "timestamp": 1767686837777,
+        "rasio_rs_ro": 1.7912885324811
+    },
+    {
+        "raw_mean_E": 3679.69,
+        "raw_mean_T": 33,
+        "raw_mean_H": 145,
+        "status": "READY",
+        "crisp": 0.9,
+        "isNotify": true,
+        "timestamp": 1767686837779,
+        "rasio_rs_ro": 1.8078877289845272
+    },
+    {
+        "raw_mean_E": 3714.19,
+        "raw_mean_T": 32.91,
+        "raw_mean_H": 145,
+        "status": "STAGNANT",
+        "crisp": 0,
+        "isNotify": false,
+        "timestamp": 1767686837780,
+        "rasio_rs_ro": 1.7666210151832367
+    },
+    {
+        "raw_mean_E": 3737.56,
+        "raw_mean_T": 33,
+        "raw_mean_H": 143,
+        "status": "READY",
+        "crisp": 0.9,
+        "isNotify": true,
+        "timestamp": 1767686837781,
+        "rasio_rs_ro": 1.7391001195955273
+    },
+    {
+        "raw_mean_E": 3688.81,
+        "raw_mean_T": 32.89,
+        "raw_mean_H": 142,
+        "status": "READY",
+        "crisp": 0.925,
+        "isNotify": true,
+        "timestamp": 1767686837782,
+        "rasio_rs_ro": 1.796903907671346
+    },
+    {
+        "raw_mean_E": 3711.42,
+        "raw_mean_T": 32.93,
+        "raw_mean_H": 147.1,
+        "status": "POST_PEAK",
+        "crisp": 0.45000000000000007,
+        "isNotify": true,
+        "timestamp": 1767686837783,
+        "rasio_rs_ro": 1.7699059873094387
+    }
+]

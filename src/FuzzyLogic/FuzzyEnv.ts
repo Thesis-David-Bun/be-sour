@@ -6,13 +6,14 @@ export type FuzzyState =
     | "READY_URGENT"
     | "STAGNANT"
     | "WEAK"
-    | "POST_PEAK";
+    | "POST_PEAK"
+    | "OVERFLOW";
 
 export const MAP = {
     URGENT: 0.85,
-    READY: 0.70,
-    OPTIONAL: 0.55,
-    NOTREADY: 0.30,
+    READY: 0.570,
+    POST: 0.50,
+    NOTREADY: 0.60,
     FEED: 0.15,
 };
 
@@ -86,15 +87,15 @@ export const P = {
     H_high_min: 14.0,
 
     // Ethanol (assume scaled 0..4095 OR ppm), thresholds chosen as raw ADC-ish
-    E_low_max: 2000.0,
-    E_med_min: 2000.0,
-    E_med_max: 3000.0,
+    E_low_max: 2000.0, // 1000 = 13.
+    E_med_min: 2000.0, //5.539
+    E_med_max: 3000.0, //2.814
     E_high_min: 3000.0,
 
     // RiseRate thresholds (mm)
-    RR_fall: -0.3,
-    RR_rise: 0.3,
-    RR_dead_margin: 0.1, // small window around 0 considered stagnant
+    RR_fall: -1,
+    RR_rise: 1,
+    RR_dead_margin: 0, // small window around 0 considered stagnant
 
     // StagnationCounter thresholds
     SC_low: 1,    // 0..1 low
@@ -107,7 +108,7 @@ export const P = {
 
     // For rise/fall detection (compare last delta to current)
     riseEpsilon: 0.2,  // mm difference to consider change
-    fallEpsilon: -0.2,
+    fallEpsilon: -10,
     // Small meaningful rise
     minMeaningfulDelta: 0.1,  // mm
 
